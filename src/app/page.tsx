@@ -8,14 +8,26 @@ import AnimatedGlobe from '@/components/AnimatedGlobe'
 import Footer from '@/components/Footer'
 import Image from 'next/image'
 
+const images = {
+  recycling: "https://images.unsplash.com/photo-1532996122724-e3c354a0b15b",
+  greenTech: "https://images.unsplash.com/photo-1611284446314-60a58ac0deb9",
+  sustainability: "https://images.unsplash.com/photo-1542601906990-b4d3fb778b09",
+  cleanEnergy: "https://images.unsplash.com/photo-1473341304170-971dccb5ac1e"
+};
+
 export default function Home() {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white to-green-50">
+    <div className="min-h-screen bg-gradient-to-b from-green-50 to-white">
       {/* Hero Section */}
       <section className="relative min-h-screen">
-        <div className="absolute top-20 left-102">
+        <motion.div 
+          className="absolute z-50 top-22 left-110"
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 0.75, x: 0 }}
+          transition={{ duration: 0.8 }}
+        >
           <AnimatedGlobe />
-        </div>
+        </motion.div>
         <div className="relative z-10 px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
           <div className="grid gap-12 items-center pt-20 md:grid-cols-2">
             {/* Left Content */}
@@ -23,23 +35,20 @@ export default function Home() {
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.8 }}
-              className="text-left"
+              className="p-8 text-left rounded-3xl border border-green-100 backdrop-blur-sm bg-white/40"
             >
               <motion.span 
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.2 }}
-                className="inline-block px-6 py-3 mb-8 text-sm font-medium text-green-600 bg-green-100 rounded-full"
+                className="inline-block px-6 py-3 mb-8 text-sm font-medium rounded-full border border-green-200 text-green-950 bg-green-200/80"
               >
                 🌱 Join the Green Revolution
               </motion.span>
-              <h1 className="mb-6 text-5xl font-bold tracking-tight text-gray-900 md:text-6xl">
-                Transform Waste Management with{' '}
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-600 to-emerald-500">
-                  Greenify
-                </span>
+              <h1 className="mb-6 text-5xl font-bold tracking-tight text-green-900 md:text-6xl">
+                AI-Powered <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-600 to-emerald-500">Waste Management</span> Platform
               </h1>
-              <p className="mb-8 max-w-xl text-xl text-gray-600">
+              <p className="mb-8 max-w-xl text-xl text-green-800">
                 Join our innovative platform that rewards sustainable waste management. 
                 Report, collect, and earn while making our planet cleaner.
               </p>
@@ -47,7 +56,7 @@ export default function Home() {
                 <motion.button 
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  className="flex items-center px-8 py-4 text-lg font-medium text-white bg-green-600 rounded-full shadow-lg transition-all hover:bg-green-700 hover:shadow-xl"
+                  className="flex items-center px-8 py-4 text-lg font-medium text-white bg-gradient-to-r from-green-600 to-green-500 rounded-full shadow-lg transition-all hover:shadow-xl hover:from-green-500 hover:to-green-400"
                 >
                   Get Started
                   <ArrowRight className="ml-2 w-5 h-5" />
@@ -55,7 +64,7 @@ export default function Home() {
                 <motion.button 
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  className="flex items-center px-8 py-4 text-lg font-medium text-green-600 rounded-full border-2 border-green-600 transition-all hover:bg-green-50"
+                  className="flex items-center px-8 py-4 text-lg font-medium text-green-600 rounded-full border-2 border-green-500 transition-all hover:bg-green-50/50"
                 >
                   Learn More
                 </motion.button>
@@ -70,38 +79,39 @@ export default function Home() {
               className="grid relative gap-6 md:grid-cols-2"
             >
               <div className="space-y-6">
-                <div className="overflow-hidden relative h-48 rounded-2xl shadow-lg">
+                <div className="overflow-hidden relative h-48 rounded-2xl shadow-lg group">
+                  <div className="absolute inset-0 z-10 transition-colors duration-500 bg-green-600/10 group-hover:bg-green-600/0" />
                   <Image
-                    src="https://images.unsplash.com/photo-1611284446314-60a58ac0deb9"
-                    alt="Recycling"
+                    src={images.recycling}
+                    alt="Recycling Process"
                     fill
-                    className="object-cover"
+                    className="object-cover transition-transform duration-500 group-hover:scale-105"
                   />
                 </div>
                 <div className="overflow-hidden relative h-64 rounded-2xl shadow-lg">
                   <Image
-                    src="https://images.unsplash.com/photo-1611284446314-60a58ac0deb9"
-                    alt="Green Technology"
+                    src={images.greenTech}
+                    alt="Smart Waste Collection"
                     fill
-                    className="object-cover"
+                    className="object-cover transition-transform duration-500 hover:scale-105"
                   />
                 </div>
               </div>
               <div className="mt-12 space-y-6">
                 <div className="overflow-hidden relative h-64 rounded-2xl shadow-lg">
                   <Image
-                    src="https://images.unsplash.com/photo-1611284446314-60a58ac0deb9"
-                    alt="Sustainable Environment"
+                    src={images.sustainability}
+                    alt="Sustainable Technology"
                     fill
-                    className="object-cover"
+                    className="object-cover transition-transform duration-500 hover:scale-105"
                   />
                 </div>
                 <div className="overflow-hidden relative h-48 rounded-2xl shadow-lg">
                   <Image
-                    src="https://images.unsplash.com/photo-1611284446314-60a58ac0deb9"
-                    alt="Clean Energy"
+                    src={images.cleanEnergy}
+                    alt="Eco Friendly Solutions"
                     fill
-                    className="object-cover"
+                    className="object-cover transition-transform duration-500 hover:scale-105"
                   />
                 </div>
               </div>
@@ -111,7 +121,7 @@ export default function Home() {
       </section>
 
       {/* Features Section */}
-      <section className="py-32 bg-white">
+      <section className="py-32 bg-gradient-to-b from-white to-green-50">
         <div className="px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
@@ -150,13 +160,13 @@ export default function Home() {
       </section>
 
       {/* Stats Section */}
-      <section className="py-32 bg-green-50">
+      <section className="py-32 bg-green-100/50">
         <div className="px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="p-12 bg-white rounded-3xl shadow-xl"
+            className="p-12 rounded-3xl border border-green-100 shadow-xl backdrop-blur-sm bg-white/80"
           >
             <h2 className="mb-16 text-4xl font-bold text-center text-gray-900">Our Global Impact</h2>
             <div className="grid gap-12 md:grid-cols-4">
@@ -170,7 +180,7 @@ export default function Home() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-32 bg-gradient-to-b from-green-600 to-green-700">
+      <section className="py-32 bg-gradient-to-br from-green-600 via-green-500 to-emerald-600">
         <div className="px-4 mx-auto max-w-7xl text-center sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -217,9 +227,9 @@ function FeatureCard({
       viewport={{ once: true }}
       transition={{ delay, duration: 0.5 }}
       whileHover={{ y: -5 }}
-      className="flex flex-col items-center p-8 bg-white rounded-xl shadow-lg transition-all hover:shadow-xl"
+      className="flex flex-col items-center p-8 rounded-xl border border-green-100 shadow-lg backdrop-blur-sm transition-all bg-white/80 hover:shadow-xl"
     >
-      <div className="p-4 mb-6 bg-green-100 rounded-full">
+      <div className="p-4 mb-6 rounded-full bg-green-100/80">
         <Icon className="w-8 h-8 text-green-600" />
       </div>
       <h3 className="mb-4 text-2xl font-semibold text-gray-900">{title}</h3>
