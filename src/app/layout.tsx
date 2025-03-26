@@ -1,21 +1,27 @@
 import type { Metadata } from "next";
+import { Inter } from "next/font/google";
 import "./globals.css";
+import Header from "@/components/Header";
 
+const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Greenify",
-  description: "AI-Powered Waste Management Platform",
+  title: "Greenify - Zero-to-Hero Waste Management",
+  description: "Join our community in making waste management more efficient and rewarding!",
 };
 
 export default function RootLayout({
   children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+}: {
+  children: React.ReactNode
+}) {
   return (
     <html lang="en">
-      <body>
-        {children}
+      <body className={inter.className}>
+        <Header />
+        <div className="pt-20">
+          {children}
+        </div>
       </body>
     </html>
   );

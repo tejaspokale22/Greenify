@@ -1,3 +1,256 @@
+'use client'
+
+import { useState, useEffect } from 'react'
+import { motion } from 'framer-motion'
+import { ArrowRight, Leaf, Recycle, Users, Coins, MapPin } from 'lucide-react'
+import Link from 'next/link'
+import AnimatedGlobe from '@/components/AnimatedGlobe'
+import Footer from '@/components/Footer'
+import Image from 'next/image'
+
 export default function Home() {
-  return <div className="font-bold text-center">Hello World</div>;
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-white to-green-50">
+      {/* Hero Section */}
+      <section className="relative min-h-screen">
+        <div className="absolute top-20 left-102">
+          <AnimatedGlobe />
+        </div>
+        <div className="relative z-10 px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
+          <div className="grid gap-12 items-center pt-20 md:grid-cols-2">
+            {/* Left Content */}
+            <motion.div 
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.8 }}
+              className="text-left"
+            >
+              <motion.span 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.2 }}
+                className="inline-block px-6 py-3 mb-8 text-sm font-medium text-green-600 bg-green-100 rounded-full"
+              >
+                🌱 Join the Green Revolution
+              </motion.span>
+              <h1 className="mb-6 text-5xl font-bold tracking-tight text-gray-900 md:text-6xl">
+                Transform Waste Management with{' '}
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-600 to-emerald-500">
+                  Greenify
+                </span>
+              </h1>
+              <p className="mb-8 max-w-xl text-xl text-gray-600">
+                Join our innovative platform that rewards sustainable waste management. 
+                Report, collect, and earn while making our planet cleaner.
+              </p>
+              <div className="flex flex-wrap gap-4">
+                <motion.button 
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="flex items-center px-8 py-4 text-lg font-medium text-white bg-green-600 rounded-full shadow-lg transition-all hover:bg-green-700 hover:shadow-xl"
+                >
+                  Get Started
+                  <ArrowRight className="ml-2 w-5 h-5" />
+                </motion.button>
+                <motion.button 
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="flex items-center px-8 py-4 text-lg font-medium text-green-600 rounded-full border-2 border-green-600 transition-all hover:bg-green-50"
+                >
+                  Learn More
+                </motion.button>
+              </div>
+            </motion.div>
+
+            {/* Right Images */}
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.8, delay: 0.3 }}
+              className="grid relative gap-6 md:grid-cols-2"
+            >
+              <div className="space-y-6">
+                <div className="overflow-hidden relative h-48 rounded-2xl shadow-lg">
+                  <Image
+                    src="https://images.unsplash.com/photo-1611284446314-60a58ac0deb9"
+                    alt="Recycling"
+                    fill
+                    className="object-cover"
+                  />
+                </div>
+                <div className="overflow-hidden relative h-64 rounded-2xl shadow-lg">
+                  <Image
+                    src="https://images.unsplash.com/photo-1611284446314-60a58ac0deb9"
+                    alt="Green Technology"
+                    fill
+                    className="object-cover"
+                  />
+                </div>
+              </div>
+              <div className="mt-12 space-y-6">
+                <div className="overflow-hidden relative h-64 rounded-2xl shadow-lg">
+                  <Image
+                    src="https://images.unsplash.com/photo-1611284446314-60a58ac0deb9"
+                    alt="Sustainable Environment"
+                    fill
+                    className="object-cover"
+                  />
+                </div>
+                <div className="overflow-hidden relative h-48 rounded-2xl shadow-lg">
+                  <Image
+                    src="https://images.unsplash.com/photo-1611284446314-60a58ac0deb9"
+                    alt="Clean Energy"
+                    fill
+                    className="object-cover"
+                  />
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
+      {/* Features Section */}
+      <section className="py-32 bg-white">
+        <div className="px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+            className="text-center"
+          >
+            <h2 className="mb-4 text-4xl font-bold text-gray-900">Why Choose Greenify?</h2>
+            <p className="mx-auto mb-16 max-w-2xl text-xl text-gray-600">
+              Our platform combines sustainability with technology to create a rewarding 
+              experience for everyone involved in waste management.
+            </p>
+          </motion.div>
+          <div className="grid gap-8 md:grid-cols-3">
+            <FeatureCard
+              icon={Leaf}
+              title="Eco-Friendly Solutions"
+              description="Contribute to environmental sustainability through our innovative waste management system."
+              delay={0.2}
+            />
+            <FeatureCard
+              icon={Coins}
+              title="Reward System"
+              description="Earn tokens and rewards for your active participation in waste management initiatives."
+              delay={0.4}
+            />
+            <FeatureCard
+              icon={Users}
+              title="Community Impact"
+              description="Join a growing network of environmentally conscious individuals making real change."
+              delay={0.6}
+            />
+          </div>
+        </div>
+      </section>
+
+      {/* Stats Section */}
+      <section className="py-32 bg-green-50">
+        <div className="px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="p-12 bg-white rounded-3xl shadow-xl"
+          >
+            <h2 className="mb-16 text-4xl font-bold text-center text-gray-900">Our Global Impact</h2>
+            <div className="grid gap-12 md:grid-cols-4">
+              <ImpactCard title="Waste Collected" value="1,500 kg" icon={Recycle} delay={0.2} />
+              <ImpactCard title="Active Reports" value="320" icon={MapPin} delay={0.4} />
+              <ImpactCard title="Rewards Distributed" value="12,450" icon={Coins} delay={0.6} />
+              <ImpactCard title="Carbon Offset" value="850 kg" icon={Leaf} delay={0.8} />
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="py-32 bg-gradient-to-b from-green-600 to-green-700">
+        <div className="px-4 mx-auto max-w-7xl text-center sm:px-6 lg:px-8">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="mx-auto max-w-3xl"
+          >
+            <h2 className="mb-8 text-5xl font-bold text-white">Ready to Make a Difference?</h2>
+            <p className="mb-12 text-xl text-green-100">
+              Join thousands of others who are already contributing to a cleaner, 
+              more sustainable future with Greenify.
+            </p>
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="px-12 py-5 text-xl font-medium text-green-600 bg-white rounded-full shadow-lg transition-all hover:bg-green-50"
+            >
+              Start Your Journey
+            </motion.button>
+          </motion.div>
+        </div>
+      </section>
+
+      <Footer />
+    </div>
+  );
+}
+
+function FeatureCard({ 
+  icon: Icon, 
+  title, 
+  description, 
+  delay 
+}: { 
+  icon: React.ElementType; 
+  title: string; 
+  description: string;
+  delay: number;
+}) {
+  return (
+    <motion.div 
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ delay, duration: 0.5 }}
+      whileHover={{ y: -5 }}
+      className="flex flex-col items-center p-8 bg-white rounded-xl shadow-lg transition-all hover:shadow-xl"
+    >
+      <div className="p-4 mb-6 bg-green-100 rounded-full">
+        <Icon className="w-8 h-8 text-green-600" />
+      </div>
+      <h3 className="mb-4 text-2xl font-semibold text-gray-900">{title}</h3>
+      <p className="leading-relaxed text-center text-gray-600">{description}</p>
+    </motion.div>
+  );
+}
+
+function ImpactCard({ 
+  title, 
+  value, 
+  icon: Icon,
+  delay
+}: { 
+  title: string; 
+  value: string; 
+  icon: React.ElementType;
+  delay: number;
+}) {
+  return (
+    <motion.div 
+      initial={{ opacity: 0, scale: 0.9 }}
+      whileInView={{ opacity: 1, scale: 1 }}
+      viewport={{ once: true }}
+      transition={{ delay, duration: 0.5 }}
+      whileHover={{ scale: 1.05 }}
+      className="p-6 text-center"
+    >
+      <Icon className="mx-auto mb-6 w-12 h-12 text-green-600" />
+      <p className="mb-3 text-5xl font-bold text-gray-900">{value}</p>
+      <p className="text-lg text-gray-600">{title}</p>
+    </motion.div>
+  );
 }
