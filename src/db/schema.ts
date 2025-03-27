@@ -1,11 +1,13 @@
 import { integer, varchar, pgTable, serial, text, timestamp, jsonb, boolean } from "drizzle-orm/pg-core";
 
 // Users table
-export const Users = pgTable("users", {
-  id: serial("id").primaryKey(),
-  email: varchar("email", { length: 255 }).notNull().unique(),
-  name: varchar("name", { length: 255 }).notNull(),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
+export const Users = pgTable('users', {
+  id: serial('id').primaryKey(),
+  clerkId: text('clerk_id').unique().notNull(),
+  email: text('email').unique().notNull(),
+  fullName: text('full_name').notNull(),
+  profileImage: text('profile_image'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
 });
 
 // Reports table

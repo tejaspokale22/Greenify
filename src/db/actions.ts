@@ -2,15 +2,33 @@ import db from './index';
 import { Users, Reports, Rewards, CollectedWastes, Notifications, Transactions } from './schema';
 import { eq, sql, and, desc, ne } from 'drizzle-orm';
 
-export async function createUser(email: string, name: string) {
+export async function createUser(
+  clerkId: string,
+  email: string,
+  fullName: string,
+  profileImage?: string,
+) {
   try {
-    const [user] = await db.insert(Users).values({ email, name }).returning().execute();
-    return user;
+    const existingUser = await db.select().from(Users).where(eq(Users.clerkId, clerkId)).execute();
+    console.log(existingUser);
+
+    if (existingUser.length > 0) {
+      throw new Error('User already exists');
+    }
+    const newUser = await db.insert(Users).values({
+      clerkId,
+      email,
+      fullName,
+      profileImage,
+    }).returning();   
+    console.log(newUser);
+    return newUser[0];
   } catch (error) {
-    console.error("Error creating user:", error);
-    return null;
+    console.error('Error creating user:', error);
+    throw error;
   }
 }
+
 
 export async function getUserByEmail(email: string) {
   try {
@@ -315,7 +333,7 @@ export async function getAllRewards() {
         points: Rewards.points,
         level: Rewards.level,
         createdAt: Rewards.createdAt,
-        userName: Users.name,
+        userName: Users.fullName,
       })
       .from(Rewards)
       .leftJoin(Users, eq(Rewards.userId, Users.id))

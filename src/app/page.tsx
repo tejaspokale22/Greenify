@@ -227,13 +227,13 @@ function FeatureCard({
       viewport={{ once: true }}
       transition={{ delay, duration: 0.5 }}
       whileHover={{ y: -5 }}
-      className="flex flex-col items-center p-6 sm:p-8 rounded-xl border border-green-100 shadow-lg backdrop-blur-sm transition-all bg-white/80 hover:shadow-xl"
+      className="flex flex-col items-center p-8 rounded-xl border border-green-100 shadow-lg backdrop-blur-sm transition-all bg-white/80 hover:shadow-xl"
     >
-      <div className="p-3 sm:p-4 mb-4 sm:mb-6 rounded-full bg-green-100/80">
-        <Icon className="w-6 h-6 sm:w-8 sm:h-8 text-green-600" />
+      <div className="p-4 mb-6 rounded-full bg-green-100/80">
+        <Icon className="w-8 h-8 text-green-600" />
       </div>
-      <h3 className="mb-3 sm:mb-4 text-xl sm:text-2xl font-semibold text-center text-gray-900">{title}</h3>
-      <p className="text-base sm:text-lg leading-relaxed text-center text-gray-600">{description}</p>
+      <h3 className="mb-4 text-2xl font-semibold text-gray-900">{title}</h3>
+      <p className="leading-relaxed text-center text-gray-600">{description}</p>
     </motion.div>
   );
 }
@@ -256,11 +256,11 @@ function ImpactCard({
       viewport={{ once: true }}
       transition={{ delay, duration: 0.5 }}
       whileHover={{ scale: 1.05 }}
-      className="p-4 sm:p-6 text-center"
+      className="p-6 text-center"
     >
-      <Icon className="mx-auto mb-4 sm:mb-6 w-8 h-8 sm:w-12 sm:h-12 text-green-600" />
-      <p className="mb-2 sm:mb-3 text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900">{value}</p>
-      <p className="text-base sm:text-lg text-gray-600">{title}</p>
+      <Icon className="mx-auto mb-6 w-12 h-12 text-green-600" />
+      <p className="mb-3 text-5xl font-bold text-gray-900">{value}</p>
+      <p className="text-lg text-gray-600">{title}</p>
     </motion.div>
   );
 }
