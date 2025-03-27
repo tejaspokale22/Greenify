@@ -12,6 +12,7 @@
     "db:studio": "npx drizzle-kit studio"
   },
   "dependencies": {
+    "@clerk/nextjs": "^6.12.11",
     "@neondatabase/serverless": "^1.0.0",
     "dotenv": "^16.4.7",
     "drizzle-orm": "^0.41.0",
@@ -22,7 +23,8 @@
     "pg": "^8.14.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "react-hot-toast": "^2.5.2"
+    "react-hot-toast": "^2.5.2",
+    "use-sync-external-store": "^1.4.0"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
@@ -32,7 +34,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "autoprefixer": "^10.4.21",
-    "drizzle-kit": "^0.30.5",
+    "drizzle-kit": "^0.18.1",
     "eslint": "^9",
     "eslint-config-next": "15.2.4",
     "postcss": "^8.5.3",
