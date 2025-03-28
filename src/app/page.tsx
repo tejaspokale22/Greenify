@@ -17,7 +17,7 @@ const images = {
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-green-50 to-white">
+    <div className="min-h-screen bg-gradient-to-b from-green-50 to-white pt-10">
       {/* Hero Section */}
       <section className="relative min-h-screen">
         <motion.div 

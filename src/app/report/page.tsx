@@ -1,11 +1,7 @@
 "use client";
-import { useState, useCallback, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { MapPin, Upload, CheckCircle, Loader } from "lucide-react";
-import { GoogleGenerativeAI } from "@google/generative-ai";
-import { StandaloneSearchBox, useJsApiLoader } from "@react-google-maps/api";
-import { Libraries } from "@react-google-maps/api";
 import {
-  createUser,
   getUserByEmail,
   createReport,
   getRecentReports,
@@ -14,16 +10,11 @@ import { useRouter } from "next/navigation";
 import { toast } from "react-hot-toast";
 
 const geminiApiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
-const googleMapsApiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
-
-const libraries: Libraries = ["places"];
 
 export default function ReportPage() {
-  const [user, setUser] = useState<{
-    id: number;
-    email: string;
-    name: string;
-  } | null>(null);
+  if (typeof window === "undefined") return null; // Prevents SSR issues
+  const storedData = localStorage.getItem("userData");
+  const [userData, setUserData] = useState<any>(storedData ? JSON.parse(storedData) : null);
   const router = useRouter();
 
   const [reports, setReports] = useState<
@@ -47,38 +38,8 @@ export default function ReportPage() {
   const [verificationStatus, setVerificationStatus] = useState<
     "idle" | "verifying" | "success" | "failure"
   >("idle");
-  const [verificationResult, setVerificationResult] = useState<{
-    wasteType: string;
-    quantity: string;
-    confidence: number;
-  } | null>(null);
+  const [verificationResult, setVerificationResult] = useState<any>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const [searchBox, setSearchBox] =
-    useState<google.maps.places.SearchBox | null>(null);
-
-  const { isLoaded } = useJsApiLoader({
-    id: "google-map-script",
-    googleMapsApiKey: googleMapsApiKey!,
-    libraries: libraries,
-  });
-
-  const onLoad = useCallback((ref: google.maps.places.SearchBox) => {
-    setSearchBox(ref);
-  }, []);
-
-  const onPlacesChanged = () => {
-    if (searchBox) {
-      const places = searchBox.getPlaces();
-      if (places && places.length > 0) {
-        const place = places[0];
-        setNewReport((prev) => ({
-          ...prev,
-          location: place.formatted_address || "",
-        }));
-      }
-    }
-  };
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -118,7 +79,7 @@ export default function ReportPage() {
 
     try {
       const base64Data = await readFileAsBase64(file);
-      const imageData = base64Data.split(",")[1]; // Extract base64 content after comma
+      const imageData = base64Data.split(",")[1];
 
       const response = await fetch(
         `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiApiKey}`,
@@ -158,16 +119,16 @@ export default function ReportPage() {
                       "quantity": "Approximately 150 kg",
                       "confidence": 0.85,
                       "decompositionTime": "100-1000 years",
-                      "commonSources": ["Packaging materials", "Bottles", "Bags", "Containers"],
+                      "commonSources": "Give this information in a Paragraph",
                       "environmentalImpact": "Plastic waste takes hundreds of years to degrade, pollutes oceans, and harms wildlife. It breaks down into microplastics, which enter the food chain and pose risks to human health.",
                       "healthHazards": "Burning plastic releases toxic chemicals that cause respiratory diseases. Microplastics can accumulate in human organs and disrupt biological functions.",
                       "carbonFootprint": "Plastic production and waste contribute to high CO₂ emissions due to petroleum-based raw materials.",
                       "economicImpact": "Poor plastic waste management leads to high cleanup costs. However, recycling creates jobs and reduces raw material demand.",
                       "wasteReductionStrategies": "Reduce single-use plastics, promote biodegradable alternatives, and improve recycling infrastructure.",
                       "recyclingDisposalMethods": "Plastic can be sorted, shredded, and reprocessed into new products. Advanced methods like pyrolysis convert plastic into fuel. Reducing single-use plastics is also key to waste management.",
-                      "legislationRegulations": "Plastic waste disposal is regulated under Extended Producer Responsibility (EPR) policies in many countries."
                     }
-                    
+                    Give all keys info in a Paragraph or string format.
+                    Give each content in very detailed and long format excluding wasteType, confidence and quantity.
                     Ensure the response strictly follows this JSON format without additional text or explanations.`,
                   },
                   {
@@ -191,7 +152,6 @@ export default function ReportPage() {
         );
       }
 
-      // Ensure the response contains expected text output
       const text = result?.candidates?.[0]?.content?.parts?.[0]?.text;
       if (!text) {
         throw new Error("Invalid response format from Gemini API");
@@ -200,10 +160,25 @@ export default function ReportPage() {
       const jsonText = jsonMatch ? jsonMatch[0] : null;
       if (jsonText) {
         const parsedResult = JSON.parse(jsonText);
-        console.log(parsedResult);
 
         if (parsedResult.wasteType && parsedResult.quantity && parsedResult.confidence) {
-          setVerificationResult(parsedResult);
+          const report={
+            location:newReport.location,
+            wasteType:parsedResult.wasteType,
+            amount:parsedResult.quantity,
+            imageUrl:preview,
+            verificationResult:{
+              decompositionTime:parsedResult.decompositionTime,
+              commonSources:parsedResult.commonSources,
+              environmentalImpact:parsedResult.environmentalImpact,
+              healthHazards:parsedResult.healthHazards,
+              carbonFootprint:parsedResult.carbonFootprint,
+              economicImpact:parsedResult.economicImpact,
+              wasteReductionStrategies:parsedResult.wasteReductionStrategies,
+              recyclingDisposalMethods:parsedResult.recyclingDisposalMethods,
+            },
+          };
+          setVerificationResult(report);
           setVerificationStatus("success");
           setNewReport({
             ...newReport,
@@ -227,21 +202,21 @@ export default function ReportPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (verificationStatus !== "success" || !user) {
+    if (verificationStatus !== "success" || !userData) {
       toast.error("Please verify the waste before submitting or log in.");
       return;
     }
 
     setIsSubmitting(true);
     try {
-      const report = (await createReport(
-        user.id,
+      const report = await createReport(
+        userData.clerkId,
         newReport.location,
         newReport.type,
         newReport.amount,
-        preview || undefined,
-        verificationResult ? JSON.stringify(verificationResult) : undefined
-      )) as any;
+        preview,
+        verificationResult.verificationResult
+      );
 
       const formattedReport = {
         id: report.id,
@@ -261,6 +236,8 @@ export default function ReportPage() {
       toast.success(
         `Report submitted successfully! You've earned points for reporting waste.`
       );
+      
+      router.push('/dashboard');
     } catch (error) {
       console.error("Error submitting report:", error);
       toast.error("Failed to submit report. Please try again.");
@@ -269,28 +246,23 @@ export default function ReportPage() {
     }
   };
 
-  //   useEffect(() => {
-  //     const checkUser = async () => {
-  //       const email = localStorage.getItem('userEmail');
-  //       if (email) {
-  //         let user = await getUserByEmail(email);
-  //         if (!user) {
-  //           user = await createUser(email, 'Anonymous User');
-  //         }
-  //         setUser(user);
-
-  //         const recentReports = await getRecentReports();
-  //         const formattedReports = recentReports.map(report => ({
-  //           ...report,
-  //           createdAt: report.createdAt.toISOString().split('T')[0]
-  //         }));
-  //         setReports(formattedReports);
-  //       } else {
-  //         router.push('/login');
-  //       }
-  //     };
-  //     checkUser();
-  //   }, [router]);
+  // useEffect(() => {
+  //   const checkUser = async () => {
+  //     const user = localStorage.getItem('userData');
+  //     if (user) {
+  //       setUser(JSON.parse(user));
+  //       const recentReports = await getRecentReports();
+  //       const formattedReports = recentReports.map(report => ({
+  //         ...report,
+  //         createdAt: report.createdAt.toISOString().split('T')[0]
+  //       }));
+  //       setReports(formattedReports);
+  //     } else {
+  //       router.push('/');
+  //     }
+  //   };
+  //   checkUser();
+  // }, [router]);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-green-50 to-white py-12">
@@ -427,36 +399,31 @@ export default function ReportPage() {
                   htmlFor="location"
                   className="block text-sm font-medium text-gray-700 mb-2"
                 >
-                  Location
+                  Location (Google Maps URL)
                 </label>
-                {isLoaded ? (
-                  <StandaloneSearchBox
-                    onLoad={onLoad}
-                    onPlacesChanged={onPlacesChanged}
-                  >
-                    <input
-                      type="text"
-                      id="location"
-                      name="location"
-                      value={newReport.location}
-                      onChange={handleInputChange}
-                      required
-                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-300"
-                      placeholder="Search for a location..."
-                    />
-                  </StandaloneSearchBox>
-                ) : (
+                <div className="flex gap-2">
                   <input
-                    type="text"
+                    type="url"
                     id="location"
                     name="location"
                     value={newReport.location}
                     onChange={handleInputChange}
                     required
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-300"
-                    placeholder="Enter location manually"
+                    className="flex-1 px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-300"
+                    placeholder="Paste Google Maps location URL"
                   />
-                )}
+                  <button
+                    type="button"
+                    onClick={() => window.open('https://www.google.com/maps', '_blank')}
+                    className="px-4 py-3 bg-green-100 text-green-700 rounded-xl hover:bg-green-200 transition-colors duration-300 flex items-center gap-2 cursor-pointer" 
+                  >
+                    <MapPin className="w-5 h-5" />
+                    Open Maps
+                  </button>
+                </div>
+                <p className="mt-2 text-sm text-gray-500">
+                  Click 'Open Maps' to find your location, then share and copy the URL
+                </p>
               </div>
 
               <div className="space-y-6">

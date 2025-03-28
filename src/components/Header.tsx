@@ -8,6 +8,10 @@ import { UserButton, useClerk, useUser } from "@clerk/nextjs";
 import { usePathname } from "next/navigation";
 
 export default function Header() {
+  if (typeof window === "undefined") return null; // Prevents SSR issues
+  
+  const storedData = localStorage.getItem("userData");
+  const [userData, setUserData] = useState<any>(storedData ? JSON.parse(storedData) : null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { isSignedIn, user, isLoaded } = useUser();
   const { openSignIn } = useClerk();
@@ -24,6 +28,8 @@ export default function Header() {
     } else {
       localStorage.removeItem("userData");
     }
+    const userData=localStorage.getItem("userData");
+    setUserData(userData);``
   }, [isSignedIn, user]);
 
   const handleLogin = () => {
@@ -48,6 +54,7 @@ export default function Header() {
           </Link>
 
           <div className="hidden items-center space-x-8 md:flex">
+            {userData && <NavLink href="/dashboard">Dashboard</NavLink>}
             <NavLink href="/about">About</NavLink>
             <NavLink href="/features">Features</NavLink>
             <NavLink href="/contact">Contact</NavLink>
@@ -92,6 +99,7 @@ export default function Header() {
             className="md:hidden"
           >
             <div className="py-4 mt-4 space-y-4">
+              <MobileNavLink href="/dashboard">Dashboard</MobileNavLink>
               <MobileNavLink href="/about">About</MobileNavLink>
               <MobileNavLink href="/features">Features</MobileNavLink>
               <MobileNavLink href="/contact">Contact</MobileNavLink>

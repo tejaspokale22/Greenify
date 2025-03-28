@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Trash, Package, Gift, Trophy } from "lucide-react";
+import { Trash, Package, Gift, Trophy, Home, ChartBar } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -13,12 +13,13 @@ interface SidebarProps {
 export default function Sidebar({ children }: SidebarProps) {
   const pathname = usePathname();
 
-  // Only show sidebar on report route
-  if (!pathname.includes('/report')) {
+  // Show sidebar on both report and dashboard routes
+  if (!pathname.includes('/report') && !pathname.includes('/dashboard')) {
     return children;
   }
 
   const menuItems = [
+    { name: "Dashboard", icon: <Home className="w-5 h-5" />, link: "/dashboard" },
     { name: "Report Waste", icon: <Trash className="w-5 h-5" />, link: "/report" },
     { name: "Collect Waste", icon: <Package className="w-5 h-5" />, link: "/collect" },
     { name: "Rewards", icon: <Gift className="w-5 h-5" />, link: "/rewards" },
@@ -40,7 +41,7 @@ export default function Sidebar({ children }: SidebarProps) {
             {menuItems.map((item) => (
               <Link key={item.name} href={item.link} className="flex flex-col">
                 <div
-                  className={`flex items-center p-2 rounded-xl transition-all duration-300 
+                  className={`flex items-center p-3 rounded-xl transition-all duration-300 
                     ${pathname === item.link 
                       ? 'bg-green-50 text-green-700 shadow-sm' 
                       : 'text-gray-600 hover:bg-gray-50 hover:shadow-sm'}`}
@@ -70,7 +71,7 @@ export default function Sidebar({ children }: SidebarProps) {
         <div className="absolute bottom-0 left-0 right-0 p-6 border-t border-gray-100">
           <div className="flex items-center space-x-4">
             <div className="w-2 h-2 rounded-full bg-green-500"></div>
-            <p className="text-sm text-gray-600">Settings</p>
+            <p className="text-sm text-gray-600">Active Session</p>
           </div>
         </div>
       </aside>

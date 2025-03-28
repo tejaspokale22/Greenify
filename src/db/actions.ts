@@ -41,12 +41,11 @@ export async function getUserByEmail(email: string) {
 }
 
 export async function createReport(
-  userId: number,
+  userId: string,
   location: string,
   wasteType: string,
   amount: string,
-  imageUrl?: string,
-  type?: string,
+  imageUrl?: string | null,
   verificationResult?: any
 ) {
   try {
@@ -57,35 +56,21 @@ export async function createReport(
         location,
         wasteType,
         amount,
-        imageUrl,
-        verificationResult,
+        imageUrl: imageUrl || null,
+        verificationResult: verificationResult || null,
         status: "pending",
       })
       .returning()
       .execute();
 
-    // Award 10 points for reporting waste
-    const pointsEarned = 10;
-    await updateRewardPoints(userId, pointsEarned);
-
-    // Create a transaction for the earned points
-    await createTransaction(userId, 'earned_report', pointsEarned, 'Points earned for reporting waste');
-
-    // Create a notification for the user
-    await createNotification(
-      userId,
-      `You've earned ${pointsEarned} points for reporting waste!`,
-      'reward'
-    );
-
     return report;
   } catch (error) {
     console.error("Error creating report:", error);
-    return null;
+    throw error;
   }
 }
 
-export async function getReportsByUserId(userId: number) {
+export async function getReportsByUserId(userId: string) {
   try {
     const reports = await db.select().from(Reports).where(eq(Reports.userId, userId)).execute();
     return reports;
@@ -440,57 +425,41 @@ export async function createTransaction(userId: number, type: 'earned_report' | 
   }
 }
 
-export async function redeemReward(userId: number, rewardId: number) {
-  try {
-    const userReward = await getOrCreateReward(userId) as any;
+// export async function redeemReward(userId: number, rewardId: number) {
+//   try {
+//     const userReward = await getOrCreateReward(userId) as any;
     
-    if (rewardId === 0) {
-      // Redeem all points
-      const [updatedReward] = await db.update(Rewards)
-        .set({ 
-          points: 0,
-          updatedAt: new Date(),
-        })
-        .where(eq(Rewards.userId, userId))
-        .returning()
-        .execute();
+//     if (rewardId === 0) {
+//       // Redeem all points
+//       const [updatedReward] = await db.update(Rewards)
+//         .set({ 
+//           points: 0,
+//           updatedAt: new Date(),
+//         })
+//         .where(eq(Rewards.userId, userId))
+//         .returning()
+//         .execute();
 
-      // Create a transaction for this redemption
-      await createTransaction(userId, 'redeemed', userReward.points, `Redeemed all points: ${userReward.points}`);
+//       // Create a transaction for this redemption
+//       await createTransaction(userId, 'redeemed', userReward.points, `Redeemed all points: ${userReward.points}`);
 
-      return updatedReward;
-    } else {
-      // Existing logic for redeeming specific rewards
-      const availableReward = await db.select().from(Rewards).where(eq(Rewards.id, rewardId)).execute();
+//       return updatedReward;
+//     } else {
+//       // Existing logic for redeeming specific rewards
+//       const availableReward = await db.select().from(Rewards).where(eq(Rewards.id, rewardId)).execute();
 
-      if (!userReward || !availableReward[0] || userReward.points < availableReward[0].points) {
-        throw new Error("Insufficient points or invalid reward");
-      }
+//       if (!userReward || !availableReward[0] || userReward.points < availableReward[0].points) {
+//         throw new Error("Insufficient points or invalid reward");
+//       }
 
-      const [updatedReward] = await db.update(Rewards)
-        .set({ 
-          points: sql`${Rewards.points} - ${availableReward[0].points}`,
-          updatedAt: new Date(),
-        })
-        .where(eq(Rewards.userId, userId))
-        .returning()
-        .execute();
+//       const [updatedReward] = await db.update(Rewards)
+//         .set({ 
+//           points: sql`${Rewards.points} - ${availableReward[0].points}`,
+//           updatedAt: new Date(),
+//         })
+//         .where(eq(Rewards.userId, userId))
+//         .returning()
+//         .execute();
 
-      // Create a transaction for this redemption
-      await createTransaction(userId, 'redeemed', availableReward[0].points, `Redeemed: ${availableReward[0].name}`);
-
-      return updatedReward;
-    }
-  } catch (error) {
-    console.error("Error redeeming reward:", error);
-    throw error;
-  }
-}
-
-export async function getUserBalance(userId: number): Promise<number> {
-  const transactions = await getRewardTransactions(userId);
-  const balance = transactions.reduce((acc, transaction) => {
-    return transaction.type.startsWith('earned') ? acc + transaction.amount : acc - transaction.amount
-  }, 0);
-  return Math.max(balance, 0); // Ensure balance is never negative
-}
+//       // Create a transaction for this redemption
+//       await createTransaction(userId, 'redeemed', availableReward[0].points, `
