@@ -4,14 +4,14 @@ import db from "@/db/index"; // Your Drizzle DB instance
 import { Users } from "@/db/schema"; // Your Drizzle user schema
 import { eq } from "drizzle-orm";
 
-const CLERK_WEBHOOK_SECRET = process.env.CLERK_WEBHOOK_SECRET!;
+const CLERK_WEBHOOK_SECRET_USER = process.env.CLERK_WEBHOOK_SECRET_USER!;
 
 export async function POST(req: NextRequest) {
   const body = await req.text();
   const headers = Object.fromEntries(req.headers.entries());
   try {
     // Verify webhook signature
-    const wh = new Webhook(CLERK_WEBHOOK_SECRET);
+    const wh = new Webhook(CLERK_WEBHOOK_SECRET_USER);
     const evt = wh.verify(body, headers) as any; // Svix verification
 
     const user = evt.data;

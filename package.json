@@ -13,7 +13,9 @@
   },
   "dependencies": {
     "@clerk/nextjs": "^6.12.11",
+    "@google/generative-ai": "^0.24.0",
     "@neondatabase/serverless": "^1.0.0",
+    "@react-google-maps/api": "^2.20.6",
     "dotenv": "^16.4.7",
     "drizzle-orm": "^0.41.0",
     "framer-motion": "^12.6.2",

@@ -18,11 +18,12 @@ export const Reports = pgTable("reports", {
   wasteType: varchar("waste_type", { length: 255 }).notNull(),
   amount: varchar("amount", { length: 255 }).notNull(),
   imageUrl: text("image_url"),
-  verificationResult: jsonb("verification_result"),
+  verificationResult: jsonb("verification_result").notNull(), // Structured JSON waste analysis data
   status: varchar("status", { length: 255 }).notNull().default("pending"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   collectorId: integer("collector_id").references(() => Users.id),
 });
+
 
 // Rewards table
 export const Rewards = pgTable("rewards", {

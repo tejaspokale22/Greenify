@@ -2,23 +2,31 @@
 
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Leaf, Menu, X, User, ArrowRight } from "lucide-react";
+import { Leaf, Menu, X } from "lucide-react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 import { UserButton, useClerk, useUser } from "@clerk/nextjs";
-import { createUser } from "@/db/actions";
-import { toast } from "react-hot-toast";
+import { usePathname } from "next/navigation";
 
 export default function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const pathname = usePathname();
   const { isSignedIn, user, isLoaded } = useUser();
   const { openSignIn } = useClerk();
-  const [hasChecked, setHasChecked] = useState(false);
 
-  console.log(user);
+  useEffect(() => {
+    if (isSignedIn && user) {
+      const userData = {
+        clerkId: user.id,
+        name: user.fullName || "Unknown",
+        email: user.primaryEmailAddress?.emailAddress || "No Email",
+        imageUrl: user.imageUrl || "",
+      };
+      localStorage.setItem("userData", JSON.stringify(userData));
+    } else {
+      localStorage.removeItem("userData");
+    }
+  }, [isSignedIn, user]);
 
-  const handleLogin = async () => {
+  const handleLogin = () => {
     openSignIn({
       appearance: {
         elements: {
@@ -26,57 +34,44 @@ export default function Header() {
           card: "rounded-xl",
         },
       },
-      afterSignInUrl: "/",
+      afterSignInUrl: "/", 
     });
   };
-
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 py-3 bg-white shadow-md">
       <div className="px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
         <nav className="flex justify-between items-center">
-          {/* Logo */}
           <Link href="/" className="flex items-center space-x-1">
             <Leaf className="w-10 h-10 text-green-700" />
             <span className="text-2xl font-bold text-gray-900">Greenify</span>
           </Link>
 
-          {/* Desktop Navigation */}
           <div className="hidden items-center space-x-8 md:flex">
             <NavLink href="/about">About</NavLink>
             <NavLink href="/features">Features</NavLink>
             <NavLink href="/contact">Contact</NavLink>
-            
+
             {!isLoaded ? (
               <div className="w-8 h-8 rounded-full bg-gray-200 animate-pulse" />
             ) : !isSignedIn ? (
               <button
                 onClick={handleLogin}
-                className="flex items-center px-4 py-1 text-white bg-green-700 text-sm rounded transition-colors duration-200 hover:bg-green-800 cursor-pointer"
+                className="flex items-center px-5 py-2 text-white bg-green-700 text-sm rounded transition-colors duration-200 hover:bg-green-800 cursor-pointer"
               >
                 Log in
               </button>
             ) : (
-              <div className="flex items-center space-x-4">
-                <Link 
-                  href="/dashboard" 
-                  className="flex items-center space-x-2 text-green-600 transition-colors duration-200 hover:text-green-700"
-                >
-                  <User className="w-5 h-5" />
-                  <span>Dashboard</span>
-                </Link>
-                <UserButton 
-                  appearance={{
-                    elements: {
-                      avatarBox: "w-10 h-10"
-                    }
-                  }}
-                />
-              </div>
+              <UserButton
+                appearance={{
+                  elements: {
+                    avatarBox: "w-14 h-14",
+                  },
+                }}
+              />
             )}
           </div>
 
-          {/* Mobile Menu Button */}
           <button
             className="p-2 md:hidden transition-colors duration-200 hover:bg-gray-100 rounded-full"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -89,7 +84,6 @@ export default function Header() {
           </button>
         </nav>
 
-        {/* Mobile Menu */}
         {isMobileMenuOpen && (
           <motion.div
             initial={{ opacity: 0, y: -20 }}
@@ -102,19 +96,15 @@ export default function Header() {
               <MobileNavLink href="/features">Features</MobileNavLink>
               <MobileNavLink href="/contact">Contact</MobileNavLink>
               {isSignedIn ? (
-                <>
-                  <MobileNavLink href="/dashboard">Dashboard</MobileNavLink>
-                  <div className="px-4">
-                    <UserButton 
-                      appearance={{
-                        elements: {
-                          avatarBox: "w-10 h-10"
-                        }
-                      }}
-                      afterSignOutUrl="/"
-                    />
-                  </div>
-                </>
+                <div className="px-4">
+                  <UserButton
+                    appearance={{
+                      elements: {
+                        avatarBox: "w-14 h-14",
+                      },
+                    }}
+                  />
+                </div>
               ) : (
                 <button
                   onClick={handleLogin}
@@ -131,17 +121,21 @@ export default function Header() {
   );
 }
 
-function NavLink({ href, children }: { href: string; children: React.ReactNode }) {
+function NavLink({
+  href,
+  children,
+}: {
+  href: string;
+  children: React.ReactNode;
+}) {
   const pathname = usePathname();
   const isActive = pathname === href;
-  
+
   return (
     <Link
       href={href}
       className={`text-sm font-medium transition-colors ${
-        isActive 
-          ? "text-green-600" 
-          : "text-gray-600 hover:text-green-600"
+        isActive ? "text-green-600" : "text-gray-600 hover:text-green-600"
       }`}
     >
       {children}
@@ -149,17 +143,21 @@ function NavLink({ href, children }: { href: string; children: React.ReactNode }
   );
 }
 
-function MobileNavLink({ href, children }: { href: string; children: React.ReactNode }) {
+function MobileNavLink({
+  href,
+  children,
+}: {
+  href: string;
+  children: React.ReactNode;
+}) {
   const pathname = usePathname();
   const isActive = pathname === href;
-  
+
   return (
     <Link
       href={href}
       className={`block px-4 py-2 text-base font-medium transition-colors ${
-        isActive 
-          ? "text-green-600" 
-          : "text-gray-900 hover:text-green-600"
+        isActive ? "text-green-600" : "text-gray-900 hover:text-green-600"
       }`}
     >
       {children}
