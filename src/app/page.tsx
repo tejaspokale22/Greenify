@@ -17,11 +17,11 @@ const images = {
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-green-50 to-white pt-10">
+    <div className="pt-10 min-h-screen bg-gradient-to-b from-green-50 to-white">
       {/* Hero Section */}
       <section className="relative min-h-screen">
         <motion.div 
-          className="absolute z-50 hidden lg:block top-22 left-110"
+          className="hidden absolute z-50 lg:block top-22 left-110"
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 0.75, x: 0 }}
           transition={{ duration: 0.8 }}
@@ -29,34 +29,34 @@ export default function Home() {
           <AnimatedGlobe />
         </motion.div>
         <div className="relative z-10 px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
-          <div className="grid gap-8 lg:gap-12 items-center pt-12 lg:pt-20 md:grid-cols-2">
+          <div className="grid gap-8 items-center pt-12 lg:gap-12 lg:pt-20 md:grid-cols-2">
             {/* Left Content */}
             <motion.div 
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.8 }}
-              className="p-4 sm:p-6 lg:p-8 text-left rounded-3xl backdrop-blur-sm from-green-50 to-white"
+              className="p-4 text-left from-green-50 to-white rounded-3xl backdrop-blur-sm sm:p-6 lg:p-8"
             >
               <motion.span 
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.2 }}
-                className="inline-block px-4 sm:px-6 py-2 sm:py-3 mb-6 sm:mb-8 text-sm font-medium rounded-full border border-green-200 text-green-950 bg-green-200/80"
+                className="inline-block px-4 py-2 mb-6 text-sm font-medium rounded-full border border-green-200 sm:px-6 sm:py-3 sm:mb-8 text-green-950 bg-green-200/80"
               >
                 🌱 Join the Green Revolution
               </motion.span>
-              <h1 className="mb-4 sm:mb-6 text-3xl sm:text-4xl lg:text-6xl font-bold tracking-tight text-green-900">
+              <h1 className="mb-4 text-3xl font-bold tracking-tight text-green-900 sm:mb-6 sm:text-4xl lg:text-6xl">
                 AI-Powered <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-600 to-emerald-500">Waste Management</span> Platform
               </h1>
-              <p className="mb-6 sm:mb-8 max-w-xl text-lg sm:text-xl text-green-800">
+              <p className="mb-6 max-w-xl text-lg text-green-800 sm:mb-8 sm:text-xl">
                 Join our innovative platform that rewards sustainable waste management. 
                 Report, collect, and earn while making our planet cleaner.
               </p>
-              <div className="flex flex-col sm:flex-row gap-4">
+              <div className="flex flex-col gap-4 sm:flex-row">
                 <motion.button 
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  className="flex items-center justify-center px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg font-medium text-white bg-gradient-to-r from-green-600 to-green-500 rounded-full shadow-lg transition-all hover:shadow-xl hover:from-green-500 hover:to-green-400"
+                  className="flex justify-center items-center px-6 py-3 text-base font-medium text-white bg-gradient-to-r from-green-600 to-green-500 rounded-full shadow-lg transition-all sm:px-8 sm:py-4 sm:text-lg hover:shadow-xl hover:from-green-500 hover:to-green-400"
                 >
                   Get Started
                   <ArrowRight className="ml-2 w-5 h-5" />
@@ -64,7 +64,7 @@ export default function Home() {
                 <motion.button 
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  className="flex items-center justify-center px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg font-medium text-green-600 rounded-full border-2 border-green-500 transition-all hover:bg-green-50/50"
+                  className="flex justify-center items-center px-6 py-3 text-base font-medium text-green-600 rounded-full border-2 border-green-500 transition-all sm:px-8 sm:py-4 sm:text-lg hover:bg-green-50/50"
                 >
                   Learn More
                 </motion.button>
@@ -79,7 +79,7 @@ export default function Home() {
               className="grid relative gap-4 sm:gap-6 md:grid-cols-2"
             >
               <div className="space-y-4 sm:space-y-6">
-                <div className="overflow-hidden relative h-36 sm:h-48 rounded-2xl shadow-lg group">
+                <div className="overflow-hidden relative h-36 rounded-2xl shadow-lg sm:h-48 group">
                   <div className="absolute inset-0 z-10 transition-colors duration-500 bg-green-600/10 group-hover:bg-green-600/0" />
                   <Image
                     src={images.recycling}
@@ -88,7 +88,7 @@ export default function Home() {
                     className="object-cover transition-transform duration-500 group-hover:scale-105"
                   />
                 </div>
-                <div className="overflow-hidden relative h-48 sm:h-64 rounded-2xl shadow-lg">
+                <div className="overflow-hidden relative h-48 rounded-2xl shadow-lg sm:h-64">
                   <Image
                     src={images.greenTech}
                     alt="Smart Waste Collection"
@@ -97,8 +97,8 @@ export default function Home() {
                   />
                 </div>
               </div>
-              <div className="mt-4 sm:mt-12 space-y-4 sm:space-y-6">
-                <div className="overflow-hidden relative h-48 sm:h-64 rounded-2xl shadow-lg">
+              <div className="mt-4 space-y-4 sm:mt-12 sm:space-y-6">
+                <div className="overflow-hidden relative h-48 rounded-2xl shadow-lg sm:h-64">
                   <Image
                     src={images.sustainability}
                     alt="Sustainable Technology"
@@ -106,7 +106,7 @@ export default function Home() {
                     className="object-cover transition-transform duration-500 hover:scale-105"
                   />
                 </div>
-                <div className="overflow-hidden relative h-36 sm:h-48 rounded-2xl shadow-lg">
+                <div className="overflow-hidden relative h-36 rounded-2xl shadow-lg sm:h-48">
                   <Image
                     src={images.cleanEnergy}
                     alt="Eco Friendly Solutions"
@@ -121,7 +121,7 @@ export default function Home() {
       </section>
 
       {/* Features Section */}
-      <section className="py-16 sm:py-24 lg:py-32 bg-gradient-to-b from-white to-green-50">
+      <section className="py-16 bg-gradient-to-b from-white to-green-50 sm:py-24 lg:py-32">
         <div className="px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
@@ -130,8 +130,8 @@ export default function Home() {
             transition={{ duration: 0.6 }}
             className="text-center"
           >
-            <h2 className="mb-4 text-3xl sm:text-4xl font-bold text-gray-900">Why Choose Greenify?</h2>
-            <p className="mx-auto mb-12 sm:mb-16 max-w-2xl text-lg sm:text-xl text-gray-600">
+            <h2 className="mb-4 text-3xl font-bold text-gray-900 sm:text-4xl">Why Choose Greenify?</h2>
+            <p className="mx-auto mb-12 max-w-2xl text-lg text-gray-600 sm:mb-16 sm:text-xl">
               Our platform combines sustainability with technology to create a rewarding 
               experience for everyone involved in waste management.
             </p>
@@ -166,9 +166,9 @@ export default function Home() {
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="p-6 sm:p-8 lg:p-12 rounded-3xl border border-green-100 shadow-xl backdrop-blur-sm bg-white/80"
+            className="p-6 rounded-3xl border border-green-100 shadow-xl backdrop-blur-sm sm:p-8 lg:p-12 bg-white/80"
           >
-            <h2 className="mb-12 sm:mb-16 text-3xl sm:text-4xl font-bold text-center text-gray-900">Our Global Impact</h2>
+            <h2 className="mb-12 text-3xl font-bold text-center text-gray-900 sm:mb-16 sm:text-4xl">Our Global Impact</h2>
             <div className="grid gap-8 sm:gap-12 sm:grid-cols-2 lg:grid-cols-4">
               <ImpactCard title="Waste Collected" value="1,500 kg" icon={Recycle} delay={0.2} />
               <ImpactCard title="Active Reports" value="320" icon={MapPin} delay={0.4} />
@@ -180,7 +180,7 @@ export default function Home() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-16 sm:py-24 lg:py-32 bg-gradient-to-br from-green-600 via-green-500 to-emerald-600">
+      <section className="py-16 bg-gradient-to-br from-green-600 via-green-500 to-emerald-600 sm:py-24 lg:py-32">
         <div className="px-4 mx-auto max-w-7xl text-center sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -188,15 +188,15 @@ export default function Home() {
             viewport={{ once: true }}
             className="mx-auto max-w-3xl"
           >
-            <h2 className="mb-6 sm:mb-8 text-3xl sm:text-4xl lg:text-5xl font-bold text-white">Ready to Make a Difference?</h2>
-            <p className="mb-8 sm:mb-12 text-lg sm:text-xl text-green-100">
+            <h2 className="mb-6 text-3xl font-bold text-white sm:mb-8 sm:text-4xl lg:text-5xl">Ready to Make a Difference?</h2>
+            <p className="mb-8 text-lg text-green-100 sm:mb-12 sm:text-xl">
               Join thousands of others who are already contributing to a cleaner, 
               more sustainable future with Greenify.
             </p>
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              className="px-8 sm:px-12 py-4 sm:py-5 text-lg sm:text-xl font-medium text-green-600 bg-white rounded-full shadow-lg transition-all hover:bg-green-50"
+              className="px-8 py-4 text-lg font-medium text-green-600 bg-white rounded-full shadow-lg transition-all sm:px-12 sm:py-5 sm:text-xl hover:bg-green-50"
             >
               Start Your Journey
             </motion.button>

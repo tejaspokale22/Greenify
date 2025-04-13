@@ -9,9 +9,11 @@ import { usePathname } from "next/navigation";
 
 export default function Header() {
   if (typeof window === "undefined") return null; // Prevents SSR issues
-  
+
   const storedData = localStorage.getItem("userData");
-  const [userData, setUserData] = useState<any>(storedData ? JSON.parse(storedData) : null);
+  const [userData, setUserData] = useState<any>(
+    storedData ? JSON.parse(storedData) : null
+  );
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { isSignedIn, user, isLoaded } = useUser();
   const { openSignIn } = useClerk();
@@ -28,8 +30,8 @@ export default function Header() {
     } else {
       localStorage.removeItem("userData");
     }
-    const userData=localStorage.getItem("userData");
-    setUserData(userData);``
+    const userData = localStorage.getItem("userData");
+    setUserData(userData);
   }, [isSignedIn, user]);
 
   const handleLogin = () => {
@@ -40,31 +42,30 @@ export default function Header() {
           card: "rounded-xl",
         },
       },
-      afterSignInUrl: "/", 
+      afterSignInUrl: "/",
     });
   };
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 py-3 bg-white shadow-md">
+    <header className="fixed top-0 right-0 left-0 z-50 py-4 border-b border-gray-100 shadow-sm backdrop-blur-sm bg-white/90">
       <div className="px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
         <nav className="flex justify-between items-center">
           <Link href="/" className="flex items-center space-x-1">
-            <Leaf className="w-10 h-10 text-green-700" />
-            <span className="text-2xl font-bold text-gray-900">Greenify</span>
+            <Leaf className="w-9 h-9 text-green-700" />
+            <span className="text-[22px] font-bold tracking-tight text-gray-900">Greenify</span>
           </Link>
 
           <div className="hidden items-center space-x-8 md:flex">
-            {userData && <NavLink href="/dashboard">Dashboard</NavLink>}
             <NavLink href="/about">About</NavLink>
             <NavLink href="/features">Features</NavLink>
-            <NavLink href="/contact">Contact</NavLink>
+            {userData && <NavLink href="/dashboard">Dashboard</NavLink>}
 
             {!isLoaded ? (
-              <div className="w-8 h-8 rounded-full bg-gray-200 animate-pulse" />
+              <div className="w-8 h-8 bg-gray-200 rounded-full animate-pulse" />
             ) : !isSignedIn ? (
               <button
                 onClick={handleLogin}
-                className="flex items-center px-5 py-2 text-white bg-green-700 text-sm rounded transition-colors duration-200 hover:bg-green-800 cursor-pointer"
+                className="flex items-center px-5 py-2 text-sm font-medium text-white bg-green-800 rounded-full transition-all duration-200 cursor-pointer hover:bg-green-700 hover:shadow-md"
               >
                 Log in
               </button>
@@ -72,7 +73,7 @@ export default function Header() {
               <UserButton
                 appearance={{
                   elements: {
-                    avatarBox: "w-14 h-14",
+                    avatarBox: "w-10 h-10",
                   },
                 }}
               />
@@ -80,8 +81,9 @@ export default function Header() {
           </div>
 
           <button
-            className="p-2 md:hidden transition-colors duration-200 hover:bg-gray-100 rounded-full"
+            className="p-2 rounded-full transition-colors duration-200 md:hidden hover:bg-gray-100"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
           >
             {isMobileMenuOpen ? (
               <X className="w-6 h-6 text-gray-900" />
@@ -96,19 +98,19 @@ export default function Header() {
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.2 }}
             className="md:hidden"
           >
-            <div className="py-4 mt-4 space-y-4">
+            <div className="py-4 mt-4 space-y-3 bg-white rounded-lg shadow-lg">
               <MobileNavLink href="/dashboard">Dashboard</MobileNavLink>
               <MobileNavLink href="/about">About</MobileNavLink>
               <MobileNavLink href="/features">Features</MobileNavLink>
-              <MobileNavLink href="/contact">Contact</MobileNavLink>
               {isSignedIn ? (
-                <div className="px-4">
+                <div className="px-4 py-2">
                   <UserButton
                     appearance={{
                       elements: {
-                        avatarBox: "w-14 h-14",
+                        avatarBox: "w-10 h-10",
                       },
                     }}
                   />
@@ -116,7 +118,7 @@ export default function Header() {
               ) : (
                 <button
                   onClick={handleLogin}
-                  className="w-full px-6 py-3 text-white bg-green-600 rounded-full transition-colors duration-200 hover:bg-green-700"
+                  className="px-6 py-2.5 mx-4 w-[calc(100%-2rem)] text-white bg-green-600 rounded-full transition-all duration-200 hover:bg-green-700 hover:shadow-md"
                 >
                   Log in
                 </button>
@@ -142,11 +144,14 @@ function NavLink({
   return (
     <Link
       href={href}
-      className={`text-sm font-medium transition-colors ${
+      className={`text-sm font-medium transition-colors relative ${
         isActive ? "text-green-600" : "text-gray-600 hover:text-green-600"
       }`}
     >
       {children}
+      {isActive && (
+        <span className="absolute bottom-0 left-0 w-full h-0.5 bg-green-600 rounded-full"></span>
+      )}
     </Link>
   );
 }
@@ -165,7 +170,7 @@ function MobileNavLink({
     <Link
       href={href}
       className={`block px-4 py-2 text-base font-medium transition-colors ${
-        isActive ? "text-green-600" : "text-gray-900 hover:text-green-600"
+        isActive ? "text-green-600 bg-green-50" : "text-gray-900 hover:text-green-600 hover:bg-gray-50"
       }`}
     >
       {children}

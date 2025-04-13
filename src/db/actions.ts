@@ -80,7 +80,7 @@ export async function getReportsByUserId(userId: string) {
   }
 }
 
-export async function getOrCreateReward(userId: number) {
+export async function getOrCreateReward(userId: string) {
   try {
     let [reward] = await db.select().from(Rewards).where(eq(Rewards.userId, userId)).execute();
     if (!reward) {
@@ -100,7 +100,7 @@ export async function getOrCreateReward(userId: number) {
   }
 }
 
-export async function updateRewardPoints(userId: number, pointsToAdd: number) {
+export async function updateRewardPoints(userId: string, pointsToAdd: number) {
   try {
     const [updatedReward] = await db
       .update(Rewards)
@@ -118,7 +118,7 @@ export async function updateRewardPoints(userId: number, pointsToAdd: number) {
   }
 }
 
-export async function createCollectedWaste(reportId: number, collectorId: number, notes?: string) {
+export async function createCollectedWaste(reportId: number, collectorId: string, notes?: string) {
   try {
     const [collectedWaste] = await db
       .insert(CollectedWastes)
@@ -136,7 +136,7 @@ export async function createCollectedWaste(reportId: number, collectorId: number
   }
 }
 
-export async function getCollectedWastesByCollector(collectorId: number) {
+export async function getCollectedWastesByCollector(collectorId: string) {
   try {
     return await db.select().from(CollectedWastes).where(eq(CollectedWastes.collectorId, collectorId)).execute();
   } catch (error) {
@@ -145,7 +145,7 @@ export async function getCollectedWastesByCollector(collectorId: number) {
   }
 }
 
-export async function createNotification(userId: number, message: string, type: string) {
+export async function createNotification(userId: string, message: string, type: string) {
   try {
     const [notification] = await db
       .insert(Notifications)
@@ -159,7 +159,7 @@ export async function createNotification(userId: number, message: string, type: 
   }
 }
 
-export async function getUnreadNotifications(userId: number) {
+export async function getUnreadNotifications(userId: string) {
   try {
     return await db.select().from(Notifications).where(
       and(
@@ -231,6 +231,9 @@ export async function getWasteCollectionTasks(limit: number = 20) {
         status: Reports.status,
         date: Reports.createdAt,
         collectorId: Reports.collectorId,
+        userId: Reports.userId,
+        imageUrl: Reports.imageUrl,
+        verificationResult: Reports.verificationResult,
       })
       .from(Reports)
       .limit(limit)
@@ -246,7 +249,7 @@ export async function getWasteCollectionTasks(limit: number = 20) {
   }
 }
 
-export async function saveReward(userId: number, amount: number) {
+export async function saveReward(userId: string, amount: number) {
   try {
     const [reward] = await db
       .insert(Rewards)
@@ -271,7 +274,7 @@ export async function saveReward(userId: number, amount: number) {
   }
 }
 
-export async function saveCollectedWaste(reportId: number, collectorId: number, verificationResult: any) {
+export async function saveCollectedWaste(reportId: number, collectorId: string, verificationResult: any) {
   try {
     const [collectedWaste] = await db
       .insert(CollectedWastes)
@@ -290,7 +293,7 @@ export async function saveCollectedWaste(reportId: number, collectorId: number, 
   }
 }
 
-export async function updateTaskStatus(reportId: number, newStatus: string, collectorId?: number) {
+export async function updateTaskStatus(reportId: number, newStatus: string, collectorId?: string) {
   try {
     const updateData: any = { status: newStatus };
     if (collectorId !== undefined) {
@@ -332,7 +335,7 @@ export async function getAllRewards() {
   }
 }
 
-export async function getRewardTransactions(userId: number) {
+export async function getRewardTransactions(userId: string) {
   try {
     console.log('Fetching transactions for user ID:', userId)
     const transactions = await db
@@ -364,7 +367,7 @@ export async function getRewardTransactions(userId: number) {
   }
 }
 
-export async function getAvailableRewards(userId: number) {
+export async function getAvailableRewards(userId: string) {
   try {
     console.log('Fetching available rewards for user:', userId);
     
@@ -411,7 +414,7 @@ export async function getAvailableRewards(userId: number) {
   }
 }
 
-export async function createTransaction(userId: number, type: 'earned_report' | 'earned_collect' | 'redeemed', amount: number, description: string) {
+export async function createTransaction(userId: string, type: 'earned_report' | 'earned_collect' | 'redeemed', amount: number, description: string) {
   try {
     const [transaction] = await db
       .insert(Transactions)
@@ -463,3 +466,22 @@ export async function createTransaction(userId: number, type: 'earned_report' | 
 
 //       // Create a transaction for this redemption
 //       await createTransaction(userId, 'redeemed', availableReward[0].points, `
+
+export async function getReportById(reportId: number) {
+  try {
+    const [report] = await db
+      .select()
+      .from(Reports)
+      .where(eq(Reports.id, reportId))
+      .execute();
+    
+    if (!report) {
+      throw new Error('Report not found');
+    }
+    
+    return report;
+  } catch (error) {
+    console.error("Error fetching report by ID:", error);
+    throw error;
+  }
+}

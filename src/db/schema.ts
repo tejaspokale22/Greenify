@@ -21,14 +21,14 @@ export const Reports = pgTable("reports", {
   verificationResult: jsonb("verification_result"),
   status: varchar("status", { length: 255 }).notNull().default("pending"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
-  collectorId: integer("collector_id").references(() => Users.id),
+  collectorId: text("collector_id").references(() => Users.clerkId),
 });
 
 
 // Rewards table
 export const Rewards = pgTable("rewards", {
   id: serial("id").primaryKey(),
-  userId: integer("user_id").references(() => Users.id).notNull(),
+  userId: text("user_id").references(() => Users.clerkId).notNull(),
   points: integer("points").notNull().default(0),
   level: integer("level").notNull().default(1),
   createdAt: timestamp("created_at").defaultNow().notNull(),
@@ -43,7 +43,7 @@ export const Rewards = pgTable("rewards", {
 export const CollectedWastes = pgTable("collected_wastes", {
   id: serial("id").primaryKey(),
   reportId: integer("report_id").references(() => Reports.id).notNull(),
-  collectorId: integer("collector_id").references(() => Users.id).notNull(),
+  collectorId: text("collector_id").references(() => Users.clerkId).notNull(),
   collectionDate: timestamp("collection_date").notNull(),
   status: varchar("status", { length: 20 }).notNull().default("collected"),
 });
@@ -51,7 +51,7 @@ export const CollectedWastes = pgTable("collected_wastes", {
 // Notifications table
 export const Notifications = pgTable("notifications", {
   id: serial("id").primaryKey(),
-  userId: integer("user_id").references(() => Users.id).notNull(),
+  userId: text("user_id").references(() => Users.clerkId).notNull(),
   message: text("message").notNull(),
   type: varchar("type", { length: 50 }).notNull(),
   isRead: boolean("is_read").notNull().default(false),
@@ -61,8 +61,8 @@ export const Notifications = pgTable("notifications", {
 // New Transactions table
 export const Transactions = pgTable("transactions", {
   id: serial("id").primaryKey(),
-  userId: integer("user_id").references(() => Users.id).notNull(),
-  type: varchar("type", { length: 20 }).notNull(), // 'earned' or 'redeemed'
+  userId: text("user_id").references(() => Users.clerkId).notNull(),
+  type: varchar("type", { length: 20 }).notNull(),
   amount: integer("amount").notNull(),
   description: text("description").notNull(),
   date: timestamp("date").defaultNow().notNull(),
