@@ -1,10 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { MapPin, Upload, CheckCircle, Package } from "lucide-react";
-import {
-  createReport,
-  getRecentReports,
-} from "@/db/actions";
+import { createReport, getRecentReports } from "@/db/actions";
 import { useRouter } from "next/navigation";
 import { toast } from "react-hot-toast";
 import { Report } from "@/lib/types";
@@ -12,16 +9,17 @@ import { Report } from "@/lib/types";
 const geminiApiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
 
 export default function ReportPage() {
-  
   if (typeof window === "undefined") return null; // Prevents SSR issues
-  
+
   const storedData = localStorage.getItem("userData");
-  const [userData, setUserData] = useState<any>(storedData ? JSON.parse(storedData) : null);
+  const [userData, setUserData] = useState<any>(
+    storedData ? JSON.parse(storedData) : null
+  );
   const router = useRouter();
 
   const [reports, setReports] = useState<Report[]>([]);
   console.log(reports);
-  
+
   const [isLoadingReports, setIsLoadingReports] = useState(true);
 
   const [newReport, setNewReport] = useState({
@@ -42,7 +40,7 @@ export default function ReportPage() {
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
-    
+
     // Validate location URL if it's a location input
     if (name === "location" && value) {
       try {
@@ -52,21 +50,21 @@ export default function ReportPage() {
         return;
       }
     }
-    
+
     setNewReport({ ...newReport, [name]: value });
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     try {
-    if (e.target.files && e.target.files[0]) {
+      if (e.target.files && e.target.files[0]) {
         const selectedFile = e.target.files[0];
-        
+
         // Validate file type
-        if (!selectedFile.type.startsWith('image/')) {
+        if (!selectedFile.type.startsWith("image/")) {
           toast.error("Please upload an image file");
           return;
         }
-        
+
         // Validate file size (10MB limit)
         if (selectedFile.size > 10 * 1024 * 1024) {
           toast.error("File size should be less than 10MB");
@@ -75,7 +73,7 @@ export default function ReportPage() {
 
         setFile(selectedFile);
         const reader = new FileReader();
-      reader.onload = (e) => {
+        reader.onload = (e) => {
           setPreview(e.target?.result as string);
         };
         reader.onerror = () => {
@@ -105,7 +103,7 @@ export default function ReportPage() {
     }
 
     setVerificationStatus("verifying");
-    
+
     try {
       const base64Data = await readFileAsBase64(file);
       const imageData = base64Data.split(",")[1];
@@ -192,43 +190,43 @@ export default function ReportPage() {
         const cleanedJson = jsonText
           .replace(/'/g, '"') // Replace single quotes with double quotes
           .replace(/(\w+):/g, '"$1":') // Add quotes around property names
-          .replace(/,\s*}/g, '}') // Remove trailing commas
-          .replace(/,\s*]/g, ']'); // Remove trailing commas in arrays
+          .replace(/,\s*}/g, "}") // Remove trailing commas
+          .replace(/,\s*]/g, "]"); // Remove trailing commas in arrays
 
         try {
           const parsedResult = JSON.parse(cleanedJson);
           console.log(parsedResult);
 
-          if(parsedResult.imageType === false){
+          if (parsedResult.imageType === false) {
             toast.error("Please upload an image related to waste.");
             return;
           }
 
           if (parsedResult.wasteType && parsedResult.quantity) {
-            const report={
-              location:newReport.location,
-              wasteType:parsedResult.wasteType,
-              amount:parsedResult.quantity,
-              imageUrl:preview,
-              verificationResult:{
-                decompositionTime:parsedResult.decompositionTime,
-                commonSources:parsedResult.commonSources,
-                environmentalImpact:parsedResult.environmentalImpact,
-                healthHazards:parsedResult.healthHazards,
-                carbonFootprint:parsedResult.carbonFootprint,
-                economicImpact:parsedResult.economicImpact,
-                wasteReductionStrategies:parsedResult.wasteReductionStrategies,
-                recyclingDisposalMethods:parsedResult.recyclingDisposalMethods,
+            const report = {
+              location: newReport.location,
+              wasteType: parsedResult.wasteType,
+              amount: parsedResult.quantity,
+              imageUrl: preview,
+              verificationResult: {
+                decompositionTime: parsedResult.decompositionTime,
+                commonSources: parsedResult.commonSources,
+                environmentalImpact: parsedResult.environmentalImpact,
+                healthHazards: parsedResult.healthHazards,
+                carbonFootprint: parsedResult.carbonFootprint,
+                economicImpact: parsedResult.economicImpact,
+                wasteReductionStrategies: parsedResult.wasteReductionStrategies,
+                recyclingDisposalMethods: parsedResult.recyclingDisposalMethods,
               },
             };
             setVerificationResult(report);
             setVerificationStatus("success");
-          setNewReport({
-            ...newReport,
-            type: parsedResult.wasteType,
+            setNewReport({
+              ...newReport,
+              type: parsedResult.wasteType,
               amount: parsedResult.quantity,
-          });
-        } else {
+            });
+          } else {
             console.error("Invalid verification result:", parsedResult);
             setVerificationStatus("failure");
             toast.error("Could not analyze the waste image properly");
@@ -254,7 +252,7 @@ export default function ReportPage() {
       toast.error("Please verify the waste before submitting or log in.");
       return;
     }
-    
+
     setIsSubmitting(true);
     try {
       const report = await createReport(
@@ -265,7 +263,7 @@ export default function ReportPage() {
         preview,
         verificationResult.verificationResult
       );
-      
+
       // Create a properly typed report object
       const formattedReport: Report = {
         id: report.id,
@@ -277,21 +275,21 @@ export default function ReportPage() {
         verificationResult: verificationResult.verificationResult,
         status: "pending",
         createdAt: new Date(),
-        collectorId: null
+        collectorId: null,
       };
-      
+
       setReports([formattedReport, ...reports]);
       setNewReport({ location: "", type: "", amount: "" });
       setFile(null);
       setPreview(null);
       setVerificationStatus("idle");
       setVerificationResult(null);
-      
+
       toast.success(
         `Report submitted successfully! You've earned points for reporting waste.`
       );
 
-      router.push('/dashboard');
+      router.push("/dashboard");
     } catch (error) {
       console.error("Error submitting report:", error);
       toast.error("Failed to submit report. Please try again.");
@@ -323,19 +321,20 @@ export default function ReportPage() {
         {/* Header Section */}
         <div className="mb-16 text-center">
           <h1 className="mb-6 text-4xl font-bold text-gray-900">
-            Report Waste 
+            Report Waste
           </h1>
           <p className="mx-auto max-w-2xl text-xl text-gray-600">
-            Help us keep our environment clean by reporting waste in your area. Your contribution makes a difference.
+            Help us keep our environment clean by reporting waste in your area.
+            Your contribution makes a difference.
           </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-12">
           {/* Image Upload Card */}
           <div className="p-8 bg-white rounded-2xl shadow-lg">
-        <div className="mb-8">
+            <div className="mb-8">
               <h2 className="mb-3 text-2xl font-semibold text-gray-800">
-            Upload Waste Image
+                Upload Waste Image
               </h2>
               <p className="text-gray-600">
                 Take a clear photo of the waste to help us analyze it accurately
@@ -349,11 +348,11 @@ export default function ReportPage() {
                   <div className="space-y-4 text-center">
                     <Upload className="mx-auto w-20 h-20 text-gray-400 transition-colors duration-300 group-hover:text-green-500" />
                     <div className="flex flex-col items-center text-sm text-gray-600">
-                <label
-                  htmlFor="waste-image"
+                      <label
+                        htmlFor="waste-image"
                         className="relative mb-2 font-medium text-green-600 rounded-md cursor-pointer hover:text-green-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-green-500 focus-within:ring-offset-2"
-                >
-                  <span>Upload a file</span>
+                      >
+                        <span>Upload a file</span>
                         <input
                           id="waste-image"
                           name="waste-image"
@@ -362,18 +361,18 @@ export default function ReportPage() {
                           onChange={handleFileChange}
                           accept="image/*"
                         />
-                </label>
+                      </label>
                       <p className="text-gray-500">or drag and drop</p>
                       <p className="mt-2 text-xs text-gray-400">
                         PNG, JPG, GIF up to 10MB
                       </p>
+                    </div>
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
-        </div>
-        
+
               {/* Preview Area */}
-        {preview && (
+              {preview && (
                 <div className="overflow-hidden mt-8 rounded-xl border border-gray-200 shadow-lg">
                   <div className="relative bg-white aspect-video">
                     <img
@@ -382,13 +381,13 @@ export default function ReportPage() {
                       className="object-contain w-full h-full"
                     />
                   </div>
-          </div>
-        )}
-        
+                </div>
+              )}
+
               {/* Analyze Button */}
               <button
-          type="button" 
-          onClick={handleVerify} 
+                type="button"
+                onClick={handleVerify}
                 disabled={!file || verificationStatus === "verifying"}
                 className={`w-full flex items-center justify-center gap-3 px-8 py-4 text-lg font-medium rounded-xl transition-all duration-300 ${
                   !file
@@ -425,22 +424,26 @@ export default function ReportPage() {
                   </h3>
                   <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
                     <div className="p-6 bg-gray-50 rounded-xl border border-gray-100">
-                      <p className="mb-2 text-sm font-medium text-gray-500">Waste Type</p>
+                      <p className="mb-2 text-sm font-medium text-gray-500">
+                        Waste Type
+                      </p>
                       <p className="text-lg font-semibold text-gray-900">
                         {verificationResult.wasteType}
                       </p>
                     </div>
                     <div className="p-6 bg-gray-50 rounded-xl border border-gray-100">
-                      <p className="mb-2 text-sm font-medium text-gray-500">Quantity</p>
+                      <p className="mb-2 text-sm font-medium text-gray-500">
+                        Quantity
+                      </p>
                       <p className="text-lg font-semibold text-gray-900">
                         {verificationResult.amount}
                       </p>
                     </div>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        )}
+          )}
 
           {/* Location Details Card */}
           <div className="p-8 bg-white rounded-2xl shadow-lg">
@@ -457,86 +460,89 @@ export default function ReportPage() {
                   Location (Google Maps URL)
                 </label>
                 <div className="flex gap-3">
-                <input
+                  <input
                     type="url"
-                  id="location"
-                  name="location"
-                  value={newReport.location}
-                  onChange={handleInputChange}
-                  required
+                    id="location"
+                    name="location"
+                    value={newReport.location}
+                    onChange={handleInputChange}
+                    required
                     className="flex-1 px-4 py-3 rounded-xl border border-gray-300 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
                     placeholder="Paste Google Maps location URL"
                   />
                   <button
                     type="button"
-                    onClick={() => window.open('https://www.google.com/maps', '_blank')}
-                    className="flex gap-2 items-center px-6 py-3 text-green-700 bg-green-100 rounded-xl transition-colors duration-300 cursor-pointer hover:bg-green-200" 
+                    onClick={() =>
+                      window.open("https://www.google.com/maps", "_blank")
+                    }
+                    className="flex gap-2 items-center px-6 py-3 text-green-700 bg-green-100 rounded-xl transition-colors duration-300 cursor-pointer hover:bg-green-200"
                   >
                     <MapPin className="w-5 h-5" />
                     <span>Open Maps</span>
                   </button>
                 </div>
                 <p className="text-sm text-gray-500">
-                  Click 'Open Maps' to find your location, then share and copy the URL
+                  Click 'Open Maps' to find your location, then share and copy
+                  the URL
                 </p>
-          </div>
+              </div>
 
               {/* Waste Details */}
               <div className="space-y-6">
-          <div>
+                <div>
                   <label
                     htmlFor="type"
                     className="block mb-2 text-sm font-medium text-gray-700"
                   >
                     Waste Type
                   </label>
-            <input
-              type="text"
-              id="type"
-              name="type"
-              value={newReport.type}
-              onChange={handleInputChange}
-              required
+                  <input
+                    type="text"
+                    id="type"
+                    name="type"
+                    value={newReport.type}
+                    onChange={handleInputChange}
+                    required
                     className="px-4 py-3 w-full text-gray-700 bg-gray-50 rounded-xl border border-gray-300"
-              placeholder="Verified waste type"
-              readOnly
-            />
-          </div>
+                    placeholder="Verified waste type"
+                    readOnly
+                  />
+                </div>
 
-          <div>
+                <div>
                   <label
                     htmlFor="amount"
                     className="block mb-2 text-sm font-medium text-gray-700"
                   >
                     Estimated Amount
                   </label>
-            <input
-              type="text"
-              id="amount"
-              name="amount"
-              value={newReport.amount}
-              onChange={handleInputChange}
-              required
+                  <input
+                    type="text"
+                    id="amount"
+                    name="amount"
+                    value={newReport.amount}
+                    onChange={handleInputChange}
+                    required
                     className="px-4 py-3 w-full text-gray-700 bg-gray-50 rounded-xl border border-gray-300"
-              placeholder="Verified amount"
-              readOnly
-            />
-          </div>
-        </div>
+                    placeholder="Verified amount"
+                    readOnly
+                  />
+                </div>
+              </div>
             </div>
 
             {/* Submit Button */}
             <button
-          type="submit" 
+              type="submit"
               disabled={isSubmitting || !verificationResult}
               className={`w-full mt-10 flex items-center justify-center gap-3 px-8 py-4 text-lg font-medium rounded-xl transition-all duration-300 ${
                 !verificationResult
                   ? "text-gray-400 bg-gray-100 cursor-not-allowed"
                   : "text-white bg-green-600 shadow-lg cursor-pointer hover:bg-green-700 hover:shadow-xl"
               }`}
-        >
-          {isSubmitting ? (
-            <>
+            >
+              {isSubmitting ? (
+                <>
                   <div className="w-5 h-5 rounded-full border-b-2 border-white animate-spin"></div>
                   <span>Submitting Report...</span>
                 </>
@@ -545,22 +551,24 @@ export default function ReportPage() {
               )}
             </button>
           </div>
-      </form>
+        </form>
 
         {/* Recent Reports Section */}
         <div className="mt-16">
           <h2 className="mb-8 text-3xl font-bold text-gray-900">
             Recent Reports
           </h2>
-      <div className="overflow-hidden bg-white rounded-2xl shadow-lg">
+          <div className="overflow-hidden bg-white rounded-2xl shadow-lg">
             <div className="max-h-[480px] overflow-y-auto">
               {isLoadingReports ? (
                 <div className="flex justify-center items-center py-12">
                   <div className="w-5 h-5 rounded-full border-b-2 border-green-500 animate-spin"></div>
-                  <span className="ml-2 text-gray-500">Loading recent reports...</span>
+                  <span className="ml-2 text-gray-500">
+                    Loading recent reports...
+                  </span>
                 </div>
               ) : reports.length > 0 ? (
-          <table className="w-full">
+                <table className="w-full">
                   <thead className="sticky top-0 z-10 bg-gray-50">
                     <tr>
                       <th className="px-8 py-4 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
@@ -575,10 +583,10 @@ export default function ReportPage() {
                       <th className="px-8 py-4 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
                         Date
                       </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200">
-              {reports.map((report) => (
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-200">
+                    {reports.map((report) => (
                       <tr
                         key={report.id}
                         className="transition-colors duration-200 hover:bg-gray-50"
@@ -586,7 +594,7 @@ export default function ReportPage() {
                         <td className="px-8 py-5">
                           <div className="flex items-center">
                             <MapPin className="mr-3 w-5 h-5 text-green-500" />
-                            <a 
+                            <a
                               href={report.location}
                               target="_blank"
                               rel="noopener noreferrer"
@@ -603,12 +611,14 @@ export default function ReportPage() {
                           {report.amount}
                         </td>
                         <td className="px-8 py-5 text-sm text-gray-500">
-                          {report.createdAt ? new Date(report.createdAt).toLocaleDateString() : 'N/A'}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                          {report.createdAt
+                            ? new Date(report.createdAt).toLocaleDateString()
+                            : "N/A"}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               ) : (
                 <div className="py-12 text-center">
                   <Package className="mx-auto mb-4 w-12 h-12 text-gray-400" />

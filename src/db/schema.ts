@@ -46,6 +46,7 @@ export const CollectedWastes = pgTable("collected_wastes", {
   collectorId: text("collector_id").references(() => Users.clerkId).notNull(),
   collectionDate: timestamp("collection_date").notNull(),
   status: varchar("status", { length: 20 }).notNull().default("collected"),
+  comment: text("comment"),
 });
 
 // Notifications table

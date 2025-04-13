@@ -10,3 +10,11 @@ export interface Report {
     createdAt: Date;
     collectorId: string | null;
 }           
+
+export interface User {
+    id: string;
+    clerkId: string;
+    email: string;
+    fullName: string;
+    profileImage: string;
+}

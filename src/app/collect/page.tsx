@@ -14,7 +14,7 @@ import {
   Search,
 } from "lucide-react";
 import { toast } from "react-hot-toast";
-import { getWasteCollectionTasks } from "@/db/actions";
+import { getWasteCollectionTasks, createCollectedWaste } from "@/db/actions";
 import type { Report } from "@/lib/types";
 import { useRouter } from "next/navigation";
 import Loader from "@/components/Loader";
@@ -28,23 +28,26 @@ export default function CollectPage() {
 
   if (typeof window === "undefined") return null; // Prevents SSR issues
 
-  const [userData, setUserData] = useState<any>(null);
+  const [user, setUser] = useState<any>(null);
   const [tasks, setTasks] = useState<Report[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [hoveredWasteType, setHoveredWasteType] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedTask, setSelectedTask] = useState<Report | null>(null);
-  const [verificationImage, setVerificationImage] = useState<string | null>(
-    null
-  );
   const [verificationStatus, setVerificationStatus] = useState<
     "idle" | "verifying" | "success" | "failure"
   >("idle");
   const [verificationResult, setVerificationResult] = useState<any>(null);
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
-  const [user, setUser] = useState<any>(null);
+  const [verificationDetails, setVerificationDetails] = useState<{
+    sameLocation: boolean;
+    firstImageHasWaste: boolean;
+    cleanupStatus: string;
+    wasteType: string;
+    comments: string;
+  } | null>(null);
 
   // Function to calculate days ago
   const getDaysAgo = (date: Date) => {
@@ -130,7 +133,7 @@ export default function CollectPage() {
     currentPage * ITEMS_PER_PAGE
   );
 
-  // Fetch tasks whenever userData changes or on initial load
+  // Fetch tasks whenever user changes or on initial load
   useEffect(() => {
     const fetchTasks = async () => {
       try {
@@ -162,7 +165,6 @@ export default function CollectPage() {
     const storedUserData = localStorage.getItem("userData");
     if (storedUserData) {
       const parsedUserData = JSON.parse(storedUserData);
-      setUserData(parsedUserData);
       setUser(parsedUserData);
     }
 
@@ -187,6 +189,7 @@ export default function CollectPage() {
     }
 
     setVerificationStatus("verifying");
+    setVerificationDetails(null);
 
     try {
       const base64Data = await readFileAsBase64(file);
@@ -205,16 +208,15 @@ export default function CollectPage() {
                 parts: [
                   {
                     text: `You are an expert in waste management and environmental analysis. Analyze the two images below.
-
+  
   Instructions:
   - Determine if both images are from the same place.
   - If yes, compare the state of the location:
     - Was there waste in the first image?
     - Has the waste been cleaned in the second image?
     - Briefly describe the type of waste and the cleanup status.
-
+  
   Return a JSON object in this format:
-
   {
     "sameLocation": true or false,
     "firstImageHasWaste": true or false,
@@ -222,7 +224,7 @@ export default function CollectPage() {
     "wasteType": "plastic" or "mixed" or etc,
     "comments": "Short paragraph summarizing your findings"
   }
-
+  
   Return ONLY the JSON object, no other text or explanation.`,
                   },
                   {
@@ -256,21 +258,42 @@ export default function CollectPage() {
 
       if (jsonText) {
         const parsedResult = JSON.parse(jsonText);
-        console.log(parsedResult);
-
-        // Save the verification result
-        const verificationReport = {
-          wasteTypeMatch: parsedResult.wasteType === selectedTask.wasteType,
-          quantityMatch: parsedResult.cleanupStatus === "fully cleaned",
-          confidence: 0.95, // This could be calculated based on the API response
-          wasteType: parsedResult.wasteType,
-          cleanupStatus: parsedResult.cleanupStatus,
-          comments: parsedResult.comments,
-        };
-
-        setVerificationResult(verificationReport);
-        setVerificationStatus("success");
-        toast.success("Verification successful!");
+        setVerificationDetails(parsedResult);
+        
+        const {
+          sameLocation,
+          firstImageHasWaste,
+          cleanupStatus,
+          comments,
+        } = parsedResult;
+        
+        if (sameLocation && firstImageHasWaste && cleanupStatus === "fully cleaned") {
+          const collectedWaste = await createCollectedWaste(
+            selectedTask.id,
+            user.clerkId,
+            comments
+          );
+          if (collectedWaste) {
+            setVerificationStatus("success");
+            setVerificationResult(collectedWaste);
+            toast.success("Collection verified successfully!");
+            
+            // Update the task in the local state
+            setTasks(prevTasks => 
+              prevTasks.map(task => 
+                task.id === selectedTask.id 
+                  ? { ...task, status: "verified", verificationResult: collectedWaste } 
+                  : task
+              )
+            );
+          } else {
+            setVerificationStatus("failure");
+            toast.error("Failed to verify collection. Please try again.");
+          }
+        } else {
+          setVerificationStatus("failure");
+          toast.error("Verification failed. The images don't match or the waste hasn't been fully cleaned.");
+        }
       } else {
         throw new Error("Could not parse response JSON");
       }
@@ -542,6 +565,20 @@ export default function CollectPage() {
 
             {/* Modal Content - Fixed height with scrolling if needed */}
             <div className="p-4 max-h-[50vh] overflow-y-auto">
+              {/* Image Comparison Section */}
+              <div className="mb-4">
+                <h4 className="mb-2 text-sm font-medium text-gray-700">Original Image</h4>
+                {selectedTask.imageUrl && (
+                  <div className="overflow-hidden mb-4 h-40 rounded-lg border border-gray-200 shadow-sm">
+                    <img
+                      src={selectedTask.imageUrl}
+                      alt="Original waste"
+                      className="object-contain w-full h-full"
+                    />
+                  </div>
+                )}
+              </div>
+              
               {/* Upload Section */}
               <div className="mb-4">
                 <label
@@ -578,12 +615,57 @@ export default function CollectPage() {
 
               {/* Preview Section - Fixed height */}
               {preview && (
-                <div className="overflow-hidden mb-4 h-40 rounded-lg border border-gray-200 shadow-sm">
-                  <img
-                    src={preview}
-                    alt="Verification preview"
-                    className="object-contain w-full h-full"
-                  />
+                <div className="mb-4">
+                  <h4 className="mb-2 text-sm font-medium text-gray-700">Verification Image</h4>
+                  <div className="overflow-hidden mb-4 h-40 rounded-lg border border-gray-200 shadow-sm">
+                    <img
+                      src={preview}
+                      alt="Verification preview"
+                      className="object-contain w-full h-full"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Verification Details */}
+              {verificationDetails && (
+                <div className="p-3 mb-4 bg-gray-50 rounded-lg border border-gray-200">
+                  <h4 className="mb-2 text-sm font-medium text-gray-700">Verification Details</h4>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Same Location:</span>
+                      <span className={`font-medium ${verificationDetails.sameLocation ? 'text-green-600' : 'text-red-600'}`}>
+                        {verificationDetails.sameLocation ? 'Yes' : 'No'}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Waste Present:</span>
+                      <span className={`font-medium ${verificationDetails.firstImageHasWaste ? 'text-green-600' : 'text-red-600'}`}>
+                        {verificationDetails.firstImageHasWaste ? 'Yes' : 'No'}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Cleanup Status:</span>
+                      <span className={`font-medium ${
+                        verificationDetails.cleanupStatus === 'fully cleaned' 
+                          ? 'text-green-600' 
+                          : verificationDetails.cleanupStatus === 'partially cleaned'
+                            ? 'text-yellow-600'
+                            : 'text-red-600'
+                      }`}>
+                        {verificationDetails.cleanupStatus}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Waste Type:</span>
+                      <span className="font-medium text-gray-800">
+                        {verificationDetails.wasteType}
+                      </span>
+                    </div>
+                    <div className="pt-2 mt-2 border-t border-gray-200">
+                      <p className="text-gray-700">{verificationDetails.comments}</p>
+                    </div>
+                  </div>
                 </div>
               )}
 
@@ -599,7 +681,7 @@ export default function CollectPage() {
                         Verification Successful
                       </h3>
                       <p className="mt-1 text-xs text-green-700">
-                        Your collection has been verified successfully.
+                        Your collection has been verified successfully. You've earned a reward!
                       </p>
                     </div>
                   </div>
@@ -627,7 +709,9 @@ export default function CollectPage() {
                         Verification Failed
                       </h3>
                       <p className="mt-1 text-xs text-red-700">
-                        Please try again with a clearer image.
+                        {verificationDetails 
+                          ? "The verification criteria were not met. Please ensure the images are from the same location and the waste has been fully cleaned."
+                          : "Please try again with a clearer image."}
                       </p>
                     </div>
                   </div>
@@ -638,33 +722,41 @@ export default function CollectPage() {
             {/* Action Buttons - Fixed at bottom */}
             <div className="flex justify-end p-4 space-x-3 border-t border-gray-200">
               <button
-                onClick={() => setSelectedTask(null)}
+                onClick={() => {
+                  setSelectedTask(null);
+                  setVerificationStatus("idle");
+                  setVerificationDetails(null);
+                  setFile(null);
+                  setPreview(null);
+                }}
                 className="px-3 py-1.5 text-sm font-medium text-gray-700 bg-white rounded-md border border-gray-300 transition-colors cursor-pointer hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
               >
-                Cancel
+                {verificationStatus === "success" ? "Close" : "Cancel"}
               </button>
-              <button
-                type="button"
-                onClick={handleVerify}
-                disabled={!file || verificationStatus === "verifying"}
-                className={`flex items-center justify-center gap-1.5 px-4 py-1.5 text-sm font-medium rounded-md transition-all duration-300 ${
-                  !file
-                    ? "text-gray-400 bg-gray-100 cursor-not-allowed"
-                    : "text-white bg-green-600 shadow-sm cursor-pointer hover:bg-green-700"
-                }`}
-              >
-                {verificationStatus === "verifying" ? (
-                  <>
-                    <div className="w-3.5 h-3.5 rounded-full border-b-2 border-white animate-spin"></div>
-                    <span>Verifying...</span>
-                  </>
-                ) : (
-                  <>
-                    <CheckCircle className="w-3.5 h-3.5" />
-                    <span>Verify</span>
-                  </>
-                )}
-              </button>
+              {verificationStatus !== "success" && (
+                <button
+                  type="button"
+                  onClick={handleVerify}
+                  disabled={!file || verificationStatus === "verifying"}
+                  className={`flex items-center justify-center gap-1.5 px-4 py-1.5 text-sm font-medium rounded-md transition-all duration-300 ${
+                    !file
+                      ? "text-gray-400 bg-gray-100 cursor-not-allowed"
+                      : "text-white bg-green-600 shadow-sm cursor-pointer hover:bg-green-700"
+                  }`}
+                >
+                  {verificationStatus === "verifying" ? (
+                    <>
+                      <div className="w-3.5 h-3.5 rounded-full border-b-2 border-white animate-spin"></div>
+                      <span>Verifying...</span>
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle className="w-3.5 h-3.5" />
+                      <span>Verify</span>
+                    </>
+                  )}
+                </button>
+              )}
             </div>
           </div>
         </div>

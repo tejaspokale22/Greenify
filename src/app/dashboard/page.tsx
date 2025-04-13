@@ -23,13 +23,9 @@ import { useUser } from "@clerk/nextjs";
 
 
 export default function DashboardPage() {
-  
-  if (typeof window === "undefined") return null;
-
-  const { isSignedIn, isLoaded } = useUser();
+  const { isSignedIn, isLoaded, user } = useUser();
   const router = useRouter();
-  const storedData = localStorage.getItem("userData");
-  const [userData, setUserData] = useState<any>(storedData ? JSON.parse(storedData) : null);
+  const [userData, setUserData] = useState<any>(null);
   const [userStats, setUserStats] = useState({
     points: 0,
     reportsCount: 0,
@@ -38,6 +34,25 @@ export default function DashboardPage() {
   });
   const [recentReports, setRecentReports] = useState<Report[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+
+  // Load user data from localStorage on client-side only
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const storedData = localStorage.getItem("userData");
+      if (storedData) {
+        setUserData(JSON.parse(storedData));
+      } else if (user) {
+        // If no stored data but we have user from Clerk, create userData
+        const newUserData = {
+          name: user.fullName || user.username || "User",
+          email: user.emailAddresses[0]?.emailAddress || "",
+          id: user.id
+        };
+        setUserData(newUserData);
+        localStorage.setItem("userData", JSON.stringify(newUserData));
+      }
+    }
+  }, [user]);
 
   // Redirect to home page if user is not signed in
   useEffect(() => {
@@ -60,15 +75,15 @@ export default function DashboardPage() {
         setRecentReports(formattedReports as Report[]);
         
         // Update user stats based on reports
-        // if (formattedReports.length > 0) {
-        //   setUserStats(prev => ({
-        //     ...prev,
-        //     reportsCount: reports.length,
-        //     points: reports.length * 10,
-        //     rank: reports.length > 20 ? "Eco Master" : reports.length > 10 ? "Eco Champion" : "Eco Warrior",
-        //     impact: reports.length > 15 ? "Significant" : reports.length > 5 ? "Positive" : "Growing"
-        //   }));
-        // }
+        if (formattedReports.length > 0) {
+          setUserStats(prev => ({
+            ...prev,
+            reportsCount: reports.length,
+            points: reports.length * 10,
+            rank: reports.length > 20 ? "Eco Master" : reports.length > 10 ? "Eco Champion" : "Eco Warrior",
+            impact: reports.length > 15 ? "Significant" : reports.length > 5 ? "Positive" : "Growing"
+          }));
+        }
       } catch (error) {
         console.error("Error fetching recent reports:", error);
       } finally {
@@ -76,10 +91,11 @@ export default function DashboardPage() {
       }
     };
 
-    if (userData && isSignedIn) {
+    // Fetch reports if user is signed in, regardless of userData
+    if (isSignedIn) {
       fetchRecentReports();
     }
-  }, [userData, isSignedIn]);
+  }, [isSignedIn]);
 
   // Show loading state while checking authentication
   if (!isLoaded) {
@@ -95,7 +111,8 @@ export default function DashboardPage() {
     return null;
   }
 
-  if (!userData) return null;
+  // Use a fallback name if userData is not available
+  const userName = userData?.name || user?.fullName || user?.username || "User";
 
   const stats = [
     {
@@ -141,7 +158,7 @@ export default function DashboardPage() {
             <div className="flex justify-between items-center">
               <div>
                 <h1 className="text-3xl font-bold text-gray-900">
-                  Welcome back, {userData.name}! 🌱
+                  Welcome back, {userName}! 🌱
                 </h1>
                 <p className="mt-2 text-lg text-gray-600">
                   Track your environmental impact and waste management progress

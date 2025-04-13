@@ -6,13 +6,14 @@ import { ArrowRight, Leaf, Recycle, Users, Coins, MapPin } from 'lucide-react'
 import Link from 'next/link'
 import AnimatedGlobe from '@/components/AnimatedGlobe'
 import Footer from '@/components/Footer'
+import { Chatbot } from '@/components/Chatbot'
 import Image from 'next/image'
 
 const images = {
-  recycling: "https://images.unsplash.com/photo-1532996122724-e3c354a0b15b",
-  greenTech: "https://images.unsplash.com/photo-1611284446314-60a58ac0deb9",
-  sustainability: "https://images.unsplash.com/photo-1542601906990-b4d3fb778b09",
-  cleanEnergy: "https://images.unsplash.com/photo-1473341304170-971dccb5ac1e"
+  recycling: "https://images.unsplash.com/photo-1611284446314-60a58ac0deb9?auto=format&fit=crop&q=80&w=1200",
+  greenTech: "https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?auto=format&fit=crop&q=80&w=1200",
+  sustainability: "https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?auto=format&fit=crop&q=80&w=1200",
+  cleanEnergy: "https://images.unsplash.com/photo-1532996122724-e3c354a0b15b?auto=format&fit=crop&q=80&w=1200"
 };
 
 export default function Home() {
@@ -41,7 +42,7 @@ export default function Home() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.2 }}
-                className="inline-block px-4 py-2 mb-6 text-sm font-medium rounded-full border border-green-200 sm:px-6 sm:py-3 sm:mb-8 text-green-950 bg-green-200/80"
+                className="inline-block px-3 py-1.5 mb-6 text-sm font-medium rounded-full border border-green-200 sm:px-4 sm:py-2 sm:mb-8 text-green-950 bg-green-200/80"
               >
                 🌱 Join the Green Revolution
               </motion.span>
@@ -52,19 +53,19 @@ export default function Home() {
                 Join our innovative platform that rewards sustainable waste management. 
                 Report, collect, and earn while making our planet cleaner.
               </p>
-              <div className="flex flex-col gap-4 sm:flex-row">
+              <div className="flex flex-col gap-3 sm:flex-row">
                 <motion.button 
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="flex justify-center items-center px-6 py-3 text-base font-medium text-white bg-gradient-to-r from-green-600 to-green-500 rounded-full shadow-lg transition-all sm:px-8 sm:py-4 sm:text-lg hover:shadow-xl hover:from-green-500 hover:to-green-400"
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="flex justify-center items-center px-5 py-2.5 text-base font-medium text-white bg-gradient-to-r from-green-600 to-green-500 rounded-full shadow-lg transition-all sm:px-6 sm:py-3 sm:text-lg hover:shadow-xl hover:from-green-500 hover:to-green-400"
                 >
                   Get Started
-                  <ArrowRight className="ml-2 w-5 h-5" />
+                  <ArrowRight className="ml-2 w-4 h-4" />
                 </motion.button>
                 <motion.button 
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="flex justify-center items-center px-6 py-3 text-base font-medium text-green-600 rounded-full border-2 border-green-500 transition-all sm:px-8 sm:py-4 sm:text-lg hover:bg-green-50/50"
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="flex justify-center items-center px-5 py-2.5 text-base font-medium text-green-600 rounded-full border-2 border-green-500 transition-all sm:px-6 sm:py-3 sm:text-lg hover:bg-green-50/50"
                 >
                   Learn More
                 </motion.button>
@@ -79,13 +80,14 @@ export default function Home() {
               className="grid relative gap-4 sm:gap-6 md:grid-cols-2"
             >
               <div className="space-y-4 sm:space-y-6">
-                <div className="overflow-hidden relative h-36 rounded-2xl shadow-lg sm:h-48 group">
-                  <div className="absolute inset-0 z-10 transition-colors duration-500 bg-green-600/10 group-hover:bg-green-600/0" />
+                <div className="overflow-hidden relative h-36 rounded-2xl shadow-lg sm:h-48">
+                  <div className="absolute inset-0 z-10 bg-green-600/10" />
                   <Image
                     src={images.recycling}
                     alt="Recycling Process"
                     fill
-                    className="object-cover transition-transform duration-500 group-hover:scale-105"
+                    className="object-cover"
+                    priority
                   />
                 </div>
                 <div className="overflow-hidden relative h-48 rounded-2xl shadow-lg sm:h-64">
@@ -93,7 +95,8 @@ export default function Home() {
                     src={images.greenTech}
                     alt="Smart Waste Collection"
                     fill
-                    className="object-cover transition-transform duration-500 hover:scale-105"
+                    className="object-cover"
+                    priority
                   />
                 </div>
               </div>
@@ -103,7 +106,8 @@ export default function Home() {
                     src={images.sustainability}
                     alt="Sustainable Technology"
                     fill
-                    className="object-cover transition-transform duration-500 hover:scale-105"
+                    className="object-cover"
+                    priority
                   />
                 </div>
                 <div className="overflow-hidden relative h-36 rounded-2xl shadow-lg sm:h-48">
@@ -111,7 +115,8 @@ export default function Home() {
                     src={images.cleanEnergy}
                     alt="Eco Friendly Solutions"
                     fill
-                    className="object-cover transition-transform duration-500 hover:scale-105"
+                    className="object-cover"
+                    priority
                   />
                 </div>
               </div>
@@ -194,15 +199,18 @@ export default function Home() {
               more sustainable future with Greenify.
             </p>
             <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="px-8 py-4 text-lg font-medium text-green-600 bg-white rounded-full shadow-lg transition-all sm:px-12 sm:py-5 sm:text-xl hover:bg-green-50"
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.98 }}
+              className="px-6 py-3 text-lg font-medium text-green-600 bg-white rounded-full shadow-lg transition-all sm:px-8 sm:py-4 sm:text-xl hover:bg-green-50"
             >
               Start Your Journey
             </motion.button>
           </motion.div>
         </div>
       </section>
+
+      {/* Add WasteManagementChat component */}
+      <Chatbot />
 
       <Footer />
     </div>
@@ -255,7 +263,7 @@ function ImpactCard({
       whileInView={{ opacity: 1, scale: 1 }}
       viewport={{ once: true }}
       transition={{ delay, duration: 0.5 }}
-      whileHover={{ scale: 1.05 }}
+      whileHover={{ scale: 1.03 }}
       className="p-6 text-center"
     >
       <Icon className="mx-auto mb-6 w-12 h-12 text-green-600" />

@@ -118,7 +118,7 @@ export async function updateRewardPoints(userId: string, pointsToAdd: number) {
   }
 }
 
-export async function createCollectedWaste(reportId: number, collectorId: string, notes?: string) {
+export async function createCollectedWaste(reportId: number, collectorId: string, comments?: string) {
   try {
     const [collectedWaste] = await db
       .insert(CollectedWastes)
@@ -126,6 +126,7 @@ export async function createCollectedWaste(reportId: number, collectorId: string
         reportId,
         collectorId,
         collectionDate: new Date(),
+        comment: comments,
       })
       .returning()
       .execute();
