@@ -14,7 +14,7 @@ import {
   Search,
 } from "lucide-react";
 import { toast } from "react-hot-toast";
-import { getWasteCollectionTasks, createCollectedWaste } from "@/db/actions";
+import { getWasteCollectionTasks, createCollectedWaste, updateTaskStatus } from "@/db/actions";
 import type { Report } from "@/lib/types";
 import { useRouter } from "next/navigation";
 import Loader from "@/components/Loader";
@@ -177,11 +177,6 @@ export default function CollectPage() {
     setCurrentPage(1);
   }, [searchTerm]);
 
-  const handleStatusChange = async (taskId: string, newStatus: string) => {
-    // Implementation for status change
-    console.log(`Changing status of task ${taskId} to ${newStatus}`);
-  };
-
   const handleVerify = async () => {
     if (!file || !selectedTask) {
       toast.error("Please upload a verification image.");
@@ -268,24 +263,38 @@ export default function CollectPage() {
         } = parsedResult;
         
         if (sameLocation && firstImageHasWaste && cleanupStatus === "fully cleaned") {
+          // First create the collected waste record
           const collectedWaste = await createCollectedWaste(
             selectedTask.id,
             user.clerkId,
             comments
           );
+          
           if (collectedWaste) {
-            setVerificationStatus("success");
-            setVerificationResult(collectedWaste);
-            toast.success("Collection verified successfully!");
-            
-            // Update the task in the local state
-            setTasks(prevTasks => 
-              prevTasks.map(task => 
-                task.id === selectedTask.id 
-                  ? { ...task, status: "verified", verificationResult: collectedWaste } 
-                  : task
-              )
+            // Then update the original report status and collectorId
+            const updatedReport = await updateTaskStatus(
+              selectedTask.id,
+              "verified",
+              user.clerkId
             );
+            
+            if (updatedReport) {
+              setVerificationStatus("success");
+              setVerificationResult(collectedWaste);
+              toast.success("Collection verified successfully!");
+              
+              // Update the task in the local state
+              setTasks(prevTasks => 
+                prevTasks.map(task => 
+                  task.id === selectedTask.id 
+                    ? { ...task, status: "verified", collectorId: user.clerkId, verificationResult: collectedWaste } 
+                    : task
+                )
+              );
+            } else {
+              setVerificationStatus("failure");
+              toast.error("Failed to update report status. Please try again.");
+            }
           } else {
             setVerificationStatus("failure");
             toast.error("Failed to verify collection. Please try again.");

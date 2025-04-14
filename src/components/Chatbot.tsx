@@ -114,7 +114,7 @@ export function Chatbot() {
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.95 }}
             onClick={() => setIsOpen(true)}
-            className="p-4 text-white bg-gradient-to-r from-green-600 to-green-500 rounded-full shadow-lg transition-all cursor-pointer hover:shadow-xl hover:from-green-700 hover:to-green-600"
+            className="p-4 text-white bg-green-700 rounded-full shadow-lg transition-all cursor-pointer hover:shadow-xl hover:from-green-700 hover:to-green-600"
             aria-label="Open chat"
           >
             <MessageSquare className="w-6 h-6" />

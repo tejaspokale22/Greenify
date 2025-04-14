@@ -47,17 +47,17 @@ export default function Header() {
   };
 
   return (
-    <header className="fixed top-0 right-0 left-0 z-50 py-4 border-b border-gray-100 shadow-sm backdrop-blur-sm bg-white/90">
+    <header className="fixed top-0 right-0 left-0 z-50 py-3 border-b border-gray-100 shadow-sm backdrop-blur-sm bg-white/90">
       <div className="px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
         <nav className="flex justify-between items-center">
           <Link href="/" className="flex items-center space-x-1">
-            <Leaf className="w-9 h-9 text-green-700" />
+            <Leaf className="w-10 h-10 text-green-700" />
             <span className="text-[22px] font-bold tracking-tight text-gray-900">Greenify</span>
           </Link>
 
           <div className="hidden items-center space-x-8 md:flex">
+            <NavLink href="/">Home</NavLink>
             <NavLink href="/about">About</NavLink>
-            <NavLink href="/features">Features</NavLink>
             {userData && <NavLink href="/dashboard">Dashboard</NavLink>}
 
             {!isLoaded ? (
@@ -102,9 +102,9 @@ export default function Header() {
             className="md:hidden"
           >
             <div className="py-4 mt-4 space-y-3 bg-white rounded-lg shadow-lg">
+              <MobileNavLink href="/">Home</MobileNavLink>
               <MobileNavLink href="/dashboard">Dashboard</MobileNavLink>
               <MobileNavLink href="/about">About</MobileNavLink>
-              <MobileNavLink href="/features">Features</MobileNavLink>
               {isSignedIn ? (
                 <div className="px-4 py-2">
                   <UserButton

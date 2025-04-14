@@ -22,7 +22,7 @@ export default function Home() {
       {/* Hero Section */}
       <section className="relative min-h-screen">
         <motion.div 
-          className="hidden absolute z-50 lg:block top-22 left-110"
+          className="hidden absolute z-50 left-106 lg:block top-22"
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 0.75, x: 0 }}
           transition={{ duration: 0.8 }}
@@ -55,17 +55,13 @@ export default function Home() {
               </p>
               <div className="flex flex-col gap-3 sm:flex-row">
                 <motion.button 
-                  whileHover={{ scale: 1.03 }}
-                  whileTap={{ scale: 0.98 }}
-                  className="flex justify-center items-center px-5 py-2.5 text-base font-medium text-white bg-gradient-to-r from-green-600 to-green-500 rounded-full shadow-lg transition-all sm:px-6 sm:py-3 sm:text-lg hover:shadow-xl hover:from-green-500 hover:to-green-400"
+                  className="flex justify-center items-center cursor-pointer hover:bg-green-600 px-4 py-2.5 text-base font-medium text-white bg-green-700 rounded-full shadow-lg transition-all sm:px-6 sm:py-3 sm:text-lg"
                 >
                   Get Started
                   <ArrowRight className="ml-2 w-4 h-4" />
                 </motion.button>
                 <motion.button 
-                  whileHover={{ scale: 1.03 }}
-                  whileTap={{ scale: 0.98 }}
-                  className="flex justify-center items-center px-5 py-2.5 text-base font-medium text-green-600 rounded-full border-2 border-green-500 transition-all sm:px-6 sm:py-3 sm:text-lg hover:bg-green-50/50"
+                  className="flex justify-center items-center cursor-pointer hover:bg-green-100 px-5 py-2.5 text-base font-medium text-green-600 rounded-full border-2 border-green-500 transition-all sm:px-6 sm:py-3 sm:text-lg"
                 >
                   Learn More
                 </motion.button>
