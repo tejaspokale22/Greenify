@@ -28,6 +28,14 @@ export function Chatbot() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
+  const sanitizeResponse = (response: string): string => {
+    return response
+      .replace(/[*_~`]/g, '') // Remove markdown symbols
+      .replace(/```[\s\S]*?```/g, '') // Remove code blocks
+      .replace(/\n{3,}/g, '\n\n') // Replace multiple newlines with double newlines
+      .trim();
+  };
+
   const clearMessages = () => {
     setMessages([]);
   };
@@ -63,12 +71,13 @@ export function Chatbot() {
 
     try {
       const response = await callGeminiAPI(input, selectedImage || undefined);
+      const sanitizedResponse = sanitizeResponse(response);
       
       setMessages((prev) => [
         ...prev,
         {
           role: 'assistant',
-          content: response,
+          content: sanitizedResponse,
           timestamp: new Date(),
         },
       ]);

@@ -14,7 +14,7 @@ import {
   Search,
 } from "lucide-react";
 import { toast } from "react-hot-toast";
-import { getWasteCollectionTasks, createCollectedWaste, updateTaskStatus } from "@/db/actions";
+import { getWasteCollectionTasks, createCollectedWaste, updateTaskStatus, updateRewardPoints, createNotification } from "@/db/actions";
 import type { Report } from "@/lib/types";
 import { useRouter } from "next/navigation";
 import Loader from "@/components/Loader";
@@ -279,9 +279,19 @@ export default function CollectPage() {
             );
             
             if (updatedReport) {
+              // Add 50 points to the user's reward
+              const updatedReward = await updateRewardPoints(user.clerkId, 50);
+              
+              // Create a notification for the user
+              await createNotification(
+                user.clerkId,
+                `You earned 50 points for successfully collecting waste at ${selectedTask.location}!`,
+                "reward"
+              );
+              
               setVerificationStatus("success");
               setVerificationResult(collectedWaste);
-              toast.success("Collection verified successfully!");
+              toast.success("Collection verified successfully! You earned 50 points!");
               
               // Update the task in the local state
               setTasks(prevTasks => 
@@ -407,19 +417,19 @@ export default function CollectPage() {
                     <div className="p-4">
                       <div className="grid grid-cols-3 gap-4 mb-4 text-sm">
                         <div className="flex items-center">
-                          <Trash2 className="mr-2 w-4 h-4 text-gray-500" />
-                          <div className="relative">
+                          <Trash2 className="flex-shrink-0 mr-2 w-4 h-4 text-gray-500" />
+                          <div className="relative max-w-[120px]">
                             <span
                               onMouseEnter={() =>
                                 setHoveredWasteType(task.wasteType)
                               }
                               onMouseLeave={() => setHoveredWasteType(null)}
-                              className="truncate cursor-pointer"
+                              className="block truncate cursor-pointer"
                             >
                               {task.wasteType}
                             </span>
                             {hoveredWasteType === task.wasteType && (
-                              <div className="absolute left-0 top-full z-10 p-2 mt-1 text-xs text-white bg-gray-800 rounded-md shadow-lg">
+                              <div className="absolute left-0 top-full z-10 p-2 mt-1 text-xs text-white bg-gray-800 rounded-md shadow-lg whitespace-normal max-w-[200px]">
                                 {task.wasteType}
                               </div>
                             )}
