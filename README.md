@@ -11,6 +11,7 @@ Greenify is a smart, AI-driven web platform that redefines how waste is identifi
 - 🧠 **Expert Chatbot Integration** for sustainability tips & verification
 - 🏆 **Gamification System** to promote eco-conscious habits
 - 🗂️ **Role-based Dashboards** for Users and Collectors with automated backend AI processing
+- 🔐 **User Authentication via Clerk** for secure access and session management
 
 ---
 
@@ -23,6 +24,7 @@ Greenify is a smart, AI-driven web platform that redefines how waste is identifi
 | Backend/API  | Next.js Route Handlers (Serverless Functions) |
 | AI Model     | [Gemini API](https://ai.google.dev/) for LLM-based waste classification and verification |
 | Database     | [Neon](https://neon.tech/) (PostgreSQL) + [Drizzle ORM](https://orm.drizzle.team/) |
+| Authentication | [Clerk](https://clerk.dev/) for user auth and session handling |
 | Maps & GPS   | Google Maps JavaScript API, HTML5 Geolocation |
 | Hosting      | [Vercel](https://vercel.com/)             |
 
@@ -30,7 +32,7 @@ Greenify is a smart, AI-driven web platform that redefines how waste is identifi
 
 ## 🖼️ Screenshots
 
-> *(Add your actual UI screenshots in the screenshots/ folder)*
+> *(Screenshots are located in the main branch root)*
 
 ### 🏠 Homepage  
 ![Homepage](screenshots/homepage.png)
@@ -44,6 +46,22 @@ Greenify is a smart, AI-driven web platform that redefines how waste is identifi
 ### 🧠 Gemini AI Chatbot  
 ![Chatbot](screenshots/chatbot.png)
 
+### 📥 Waste Collection Interface  
+![Waste Collection](wastecollection.png)
+
+### 📊 Waste Report Overview  
+![Waste Report](wastereport.png)
+
+### 📄 Waste Report Details  
+![Report Details](wastereportdetails.png)
+
+### 🎯 Rewards & Gamification  
+![Rewards](rewards.png)
+
+### ⚙️ Configuration Files
+- `tailwind.config.js`
+- `tsconfig.json`
+
 ---
 
 ## 📦 Installation & Setup
@@ -56,6 +74,7 @@ Make sure you have the following installed:
 - pnpm / npm / yarn
 - Google Cloud API key (for Maps + Gemini)
 - Neon DB project with PostgreSQL
+- Clerk project (for authentication)
 - Vercel account (for deployment)
 
 ---
@@ -87,6 +106,8 @@ Create a `.env.local` file and add the following:
 DATABASE_URL=your_neon_postgres_url
 GOOGLE_MAPS_API_KEY=your_google_maps_api_key
 GEMINI_API_KEY=your_gemini_llm_key
+CLERK_PUBLISHABLE_KEY=your_clerk_publishable_key
+CLERK_SECRET_KEY=your_clerk_secret_key
 NEXT_PUBLIC_BASE_URL=http://localhost:3000
 ```
 
@@ -120,6 +141,7 @@ This app is **Vercel-ready**.
 - Collectors receive auto-assigned tasks based on location
 - Points are rewarded for verified pickups → shown in user dashboard
 - AI Chatbot guides users on correct disposal & eco habits
+- Clerk handles secure user login, signup, and session management
 
 ---
 
@@ -154,12 +176,10 @@ public/screenshots → Add your screenshots here
 
 ## 🤝 Team
 
-- Lead Developer: Tejas Pokale
-- AI Integration: Tejas Pokale
-- Frontend: Aniket Polkar
-- UI/UX: Devashish Rahate
-- Backend & Database: Tejas Pokale
-- Documentation: Pranav Patil
+- Lead Developer: [Your Name]
+- AI Integration: [Team Member]
+- UI/UX: [Team Member]
+- GIS & Database: [Team Member]
 
 ---
 
