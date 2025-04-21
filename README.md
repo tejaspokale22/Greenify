@@ -174,10 +174,12 @@ public/screenshots → Add your screenshots here
 
 ## 🤝 Team
 
-- Lead Developer: [Your Name]
-- AI Integration: [Team Member]
-- UI/UX: [Team Member]
-- GIS & Database: [Team Member]
+- Lead Developer: Tejas Pokale
+- Frontend: Aniket Polkar
+- AI Integration: Tejas Pokale
+- UI/UX: Devashish Rahate
+- GIS & Database: Tejas Pokale
+- Documentation: Pranav Patil
 
 ---
 
