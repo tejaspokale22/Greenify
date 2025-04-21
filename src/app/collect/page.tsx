@@ -25,8 +25,7 @@ const ITEMS_PER_PAGE = 5;
 
 export default function CollectPage() {
   const router = useRouter();
-
-  if (typeof window === "undefined") return null; // Prevents SSR issues
+  const [isClient, setIsClient] = useState(false);
 
   const [user, setUser] = useState<any>(null);
   const [tasks, setTasks] = useState<Report[]>([]);
@@ -48,6 +47,11 @@ export default function CollectPage() {
     wasteType: string;
     comments: string;
   } | null>(null);
+
+  // Set isClient to true when component mounts (client-side only)
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   // Function to calculate days ago
   const getDaysAgo = (date: Date) => {
@@ -335,217 +339,223 @@ export default function CollectPage() {
 
   return (
     <div className="p-4 min-h-screen bg-gray-50 sm:p-6 lg:p-8">
-      <div className="mx-auto max-w-5xl">
-        <div className="flex flex-col mb-8 sm:flex-row sm:items-center sm:justify-between">
-          <h1 className="mb-4 text-3xl font-bold text-gray-900 sm:mb-0">
-            Waste Collection Tasks
-          </h1>
-
-          <div className="relative w-full max-w-md">
-            <div className="flex absolute inset-y-0 left-0 items-center pl-3 pointer-events-none">
-              <Search className="w-5 h-5 text-gray-400" />
-            </div>
-            <input
-              type="text"
-              placeholder="Search by area..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="py-2 pr-4 pl-10 w-full text-sm bg-white rounded-lg border border-gray-300 focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-500/20"
-            />
-          </div>
+      {!isClient ? (
+        <div className="flex justify-center items-center h-64">
+          <Loader />
         </div>
+      ) : (
+        <div className="mx-auto max-w-5xl">
+          <div className="flex flex-col mb-8 sm:flex-row sm:items-center sm:justify-between">
+            <h1 className="mb-4 text-3xl font-bold text-gray-900 sm:mb-0">
+              Waste Collection Tasks
+            </h1>
 
-        {loading ? (
-          <div className="flex justify-center items-center h-64">
-            <div className="flex flex-col items-center space-y-4">
-              <Loader />
-              <p className="text-sm text-gray-500">Loading tasks...</p>
+            <div className="relative w-full max-w-md">
+              <div className="flex absolute inset-y-0 left-0 items-center pl-3 pointer-events-none">
+                <Search className="w-5 h-5 text-gray-400" />
+              </div>
+              <input
+                type="text"
+                placeholder="Search by area..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="py-2 pr-4 pl-10 w-full text-sm bg-white rounded-lg border border-gray-300 focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-500/20"
+              />
             </div>
           </div>
-        ) : (
-          <div className="space-y-6">
-            {paginatedTasks.length === 0 ? (
-              <div className="p-8 text-center bg-white rounded-lg border border-gray-200">
-                <Trash2 className="mx-auto w-12 h-12 text-gray-400" />
-                <h3 className="mt-2 text-lg font-medium text-gray-900">
-                  No tasks found
-                </h3>
-                <p className="mt-1 text-sm text-gray-500">
-                  {searchTerm
-                    ? "No tasks match your search criteria."
-                    : "There are no waste collection tasks available."}
-                </p>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {paginatedTasks.map((task) => (
-                  <div
-                    key={task.id}
-                    className="overflow-hidden bg-white rounded-lg border border-gray-200 shadow-sm transition-all hover:shadow-md"
-                  >
-                    <div className="p-4 bg-gray-50 border-b border-gray-100">
-                      <div className="flex justify-between items-center">
-                        <div className="flex items-center">
-                          <MapPin className="mr-2 w-5 h-5 text-green-600" />
-                          <a
-                            href={task.location}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="font-medium text-green-600 cursor-pointer text-md hover:underline"
-                          >
-                            See Location
-                          </a>
-                        </div>
-                        <span
-                          className={`rounded-full px-3 py-1 text-xs font-medium ${
-                            task.status === "pending"
-                              ? "bg-yellow-100 text-yellow-800"
-                              : task.status === "in_progress"
-                              ? "bg-blue-100 text-blue-800"
-                              : "bg-green-100 text-green-800"
-                          }`}
-                        >
-                          {task.status === "pending"
-                            ? "Pending"
-                            : task.status === "in_progress"
-                            ? "In Progress"
-                            : "Verified"}
-                        </span>
-                      </div>
-                    </div>
 
-                    <div className="p-4">
-                      <div className="grid grid-cols-3 gap-4 mb-4 text-sm">
-                        <div className="flex items-center">
-                          <Trash2 className="flex-shrink-0 mr-2 w-4 h-4 text-gray-500" />
-                          <div className="relative max-w-[120px]">
-                            <span
-                              onMouseEnter={() =>
-                                setHoveredWasteType(task.wasteType)
-                              }
-                              onMouseLeave={() => setHoveredWasteType(null)}
-                              className="block truncate cursor-pointer"
+          {loading ? (
+            <div className="flex justify-center items-center h-64">
+              <div className="flex flex-col items-center space-y-4">
+                <Loader />
+                <p className="text-sm text-gray-500">Loading tasks...</p>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-6">
+              {paginatedTasks.length === 0 ? (
+                <div className="p-8 text-center bg-white rounded-lg border border-gray-200">
+                  <Trash2 className="mx-auto w-12 h-12 text-gray-400" />
+                  <h3 className="mt-2 text-lg font-medium text-gray-900">
+                    No tasks found
+                  </h3>
+                  <p className="mt-1 text-sm text-gray-500">
+                    {searchTerm
+                      ? "No tasks match your search criteria."
+                      : "There are no waste collection tasks available."}
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {paginatedTasks.map((task) => (
+                    <div
+                      key={task.id}
+                      className="overflow-hidden bg-white rounded-lg border border-gray-200 shadow-sm transition-all hover:shadow-md"
+                    >
+                      <div className="p-4 bg-gray-50 border-b border-gray-100">
+                        <div className="flex justify-between items-center">
+                          <div className="flex items-center">
+                            <MapPin className="mr-2 w-5 h-5 text-green-600" />
+                            <a
+                              href={task.location}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="font-medium text-green-600 cursor-pointer text-md hover:underline"
                             >
-                              {task.wasteType}
-                            </span>
-                            {hoveredWasteType === task.wasteType && (
-                              <div className="absolute left-0 top-full z-10 p-2 mt-1 text-xs text-white bg-gray-800 rounded-md shadow-lg whitespace-normal max-w-[200px]">
+                              See Location
+                            </a>
+                          </div>
+                          <span
+                            className={`rounded-full px-3 py-1 text-xs font-medium ${
+                              task.status === "pending"
+                                ? "bg-yellow-100 text-yellow-800"
+                                : task.status === "in_progress"
+                                ? "bg-blue-100 text-blue-800"
+                                : "bg-green-100 text-green-800"
+                            }`}
+                          >
+                            {task.status === "pending"
+                              ? "Pending"
+                              : task.status === "in_progress"
+                              ? "In Progress"
+                              : "Verified"}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="p-4">
+                        <div className="grid grid-cols-3 gap-4 mb-4 text-sm">
+                          <div className="flex items-center">
+                            <Trash2 className="flex-shrink-0 mr-2 w-4 h-4 text-gray-500" />
+                            <div className="relative max-w-[120px]">
+                              <span
+                                onMouseEnter={() =>
+                                  setHoveredWasteType(task.wasteType)
+                                }
+                                onMouseLeave={() => setHoveredWasteType(null)}
+                                className="block truncate cursor-pointer"
+                              >
                                 {task.wasteType}
-                              </div>
+                              </span>
+                              {hoveredWasteType === task.wasteType && (
+                                <div className="absolute left-0 top-full z-10 p-2 mt-1 text-xs text-white bg-gray-800 rounded-md shadow-lg whitespace-normal max-w-[200px]">
+                                  {task.wasteType}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                          <div className="flex items-center">
+                            <Weight className="mr-2 w-4 h-4 text-gray-500" />
+                            <span className="truncate">
+                              {task.amount || "N/A"}
+                            </span>
+                          </div>
+                          <div className="flex items-center">
+                            <Calendar className="mr-2 w-4 h-4 text-gray-500" />
+                            <span className="truncate">
+                              {task.createdAt
+                                ? task.createdAt.toLocaleDateString()
+                                : "No date"}
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="flex justify-between items-center pt-6">
+                          <div className="text-xs text-gray-500">
+                            {task.createdAt && (
+                              <span className="flex items-center">
+                                <Clock className="mr-1 w-3 h-3" />
+                                {typeof getDaysAgo(task.createdAt) === "string"
+                                  ? getDaysAgo(task.createdAt)
+                                  : `${getDaysAgo(task.createdAt)} ${
+                                      getDaysAgo(task.createdAt) === 1
+                                        ? "day"
+                                        : "days"
+                                    } ago`}
+                              </span>
+                            )}
+                          </div>
+                          <div className="flex justify-end space-x-2">
+                            {task.status === "pending" && (
+                              <>
+                                <button
+                                  onClick={() =>
+                                    handleViewDetails(task.id?.toString() || "")
+                                  }
+                                  className="rounded-md bg-white px-3 py-1.5 text-sm font-medium text-green-600 border border-green-600 hover:bg-green-50 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 cursor-pointer"
+                                >
+                                  View Details
+                                </button>
+                                <button
+                                  onClick={() =>
+                                    handleStartCollection(
+                                      task.id?.toString() || ""
+                                    )
+                                  }
+                                  className="rounded-md bg-green-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 cursor-pointer"
+                                >
+                                  Start Collection
+                                </button>
+                              </>
+                            )}
+                            {task.status === "in_progress" &&
+                              task.collectorId === user?.id && (
+                                <button
+                                  onClick={() => setSelectedTask(task)}
+                                  className="rounded-md bg-green-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 cursor-pointer"
+                                >
+                                  Complete & Verify
+                                </button>
+                              )}
+                            {task.status === "in_progress" &&
+                              task.collectorId !== user?.id && (
+                                <span className="text-sm font-medium text-yellow-600">
+                                  In progress by another collector
+                                </span>
+                              )}
+                            {task.status === "verified" && (
+                              <span className="flex items-center text-sm font-medium text-green-600">
+                                <CheckCircle className="mr-1 w-4 h-4" />
+                                Reward Earned
+                              </span>
                             )}
                           </div>
                         </div>
-                        <div className="flex items-center">
-                          <Weight className="mr-2 w-4 h-4 text-gray-500" />
-                          <span className="truncate">
-                            {task.amount || "N/A"}
-                          </span>
-                        </div>
-                        <div className="flex items-center">
-                          <Calendar className="mr-2 w-4 h-4 text-gray-500" />
-                          <span className="truncate">
-                            {task.createdAt
-                              ? task.createdAt.toLocaleDateString()
-                              : "No date"}
-                          </span>
-                        </div>
-                      </div>
-
-                      <div className="flex justify-between items-center pt-6">
-                        <div className="text-xs text-gray-500">
-                          {task.createdAt && (
-                            <span className="flex items-center">
-                              <Clock className="mr-1 w-3 h-3" />
-                              {typeof getDaysAgo(task.createdAt) === "string"
-                                ? getDaysAgo(task.createdAt)
-                                : `${getDaysAgo(task.createdAt)} ${
-                                    getDaysAgo(task.createdAt) === 1
-                                      ? "day"
-                                      : "days"
-                                  } ago`}
-                            </span>
-                          )}
-                        </div>
-                        <div className="flex justify-end space-x-2">
-                          {task.status === "pending" && (
-                            <>
-                              <button
-                                onClick={() =>
-                                  handleViewDetails(task.id?.toString() || "")
-                                }
-                                className="rounded-md bg-white px-3 py-1.5 text-sm font-medium text-green-600 border border-green-600 hover:bg-green-50 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 cursor-pointer"
-                              >
-                                View Details
-                              </button>
-                              <button
-                                onClick={() =>
-                                  handleStartCollection(
-                                    task.id?.toString() || ""
-                                  )
-                                }
-                                className="rounded-md bg-green-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 cursor-pointer"
-                              >
-                                Start Collection
-                              </button>
-                            </>
-                          )}
-                          {task.status === "in_progress" &&
-                            task.collectorId === user?.id && (
-                              <button
-                                onClick={() => setSelectedTask(task)}
-                                className="rounded-md bg-green-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 cursor-pointer"
-                              >
-                                Complete & Verify
-                              </button>
-                            )}
-                          {task.status === "in_progress" &&
-                            task.collectorId !== user?.id && (
-                              <span className="text-sm font-medium text-yellow-600">
-                                In progress by another collector
-                              </span>
-                            )}
-                          {task.status === "verified" && (
-                            <span className="flex items-center text-sm font-medium text-green-600">
-                              <CheckCircle className="mr-1 w-4 h-4" />
-                              Reward Earned
-                            </span>
-                          )}
-                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
-              </div>
-            )}
+                  ))}
+                </div>
+              )}
 
-            {pageCount > 1 && (
-              <div className="flex justify-center items-center mt-8 space-x-2">
-                <button
-                  onClick={() =>
-                    setCurrentPage((prev) => Math.max(prev - 1, 1))
-                  }
-                  disabled={currentPage === 1}
-                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-white rounded-md border border-gray-300 cursor-pointer hover:bg-green-50 hover:text-green-700 disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  Previous
-                </button>
-                <span className="text-sm text-gray-700">
-                  Page {currentPage} of {pageCount}
-                </span>
-                <button
-                  onClick={() =>
-                    setCurrentPage((prev) => Math.min(prev + 1, pageCount))
-                  }
-                  disabled={currentPage === pageCount}
-                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-white rounded-md border border-gray-300 cursor-pointer hover:bg-green-50 hover:text-green-700 disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  Next
-                </button>
-              </div>
-            )}
-          </div>
-        )}
-      </div>
+              {pageCount > 1 && (
+                <div className="flex justify-center items-center mt-8 space-x-2">
+                  <button
+                    onClick={() =>
+                      setCurrentPage((prev) => Math.max(prev - 1, 1))
+                    }
+                    disabled={currentPage === 1}
+                    className="px-4 py-2 text-sm font-medium text-gray-700 bg-white rounded-md border border-gray-300 cursor-pointer hover:bg-green-50 hover:text-green-700 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    Previous
+                  </button>
+                  <span className="text-sm text-gray-700">
+                    Page {currentPage} of {pageCount}
+                  </span>
+                  <button
+                    onClick={() =>
+                      setCurrentPage((prev) => Math.min(prev + 1, pageCount))
+                    }
+                    disabled={currentPage === pageCount}
+                    className="px-4 py-2 text-sm font-medium text-gray-700 bg-white rounded-md border border-gray-300 cursor-pointer hover:bg-green-50 hover:text-green-700 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    Next
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      )}
 
       {selectedTask && (
         <div className="flex fixed inset-0 z-50 justify-center items-center p-4 animate-fadeIn">
@@ -750,9 +760,9 @@ export default function CollectPage() {
                 }}
                 className="px-3 py-1.5 text-sm font-medium text-gray-700 bg-white rounded-md border border-gray-300 transition-colors cursor-pointer hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
               >
-                {verificationStatus === "success" ? "Close" : "Cancel"}
+                {verificationStatus === "success" || verificationStatus === "failure" ? "Close" : "Cancel"}
               </button>
-              {verificationStatus !== "success" && (
+              {verificationStatus !== "success" && verificationStatus !== "failure" && (
                 <button
                   type="button"
                   onClick={handleVerify}
