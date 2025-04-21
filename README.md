@@ -41,8 +41,6 @@ Greenify is a smart, AI-driven web platform that redefines how waste is identifi
 
 ## 🖼️ Screenshots
 
-> *(Screenshots are located in the main branch root)*
-
 ### 🏠 Homepage  
 ![Homepage](home.png)
 
