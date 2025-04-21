@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { FaMedal, FaTrophy, FaGift, FaStar, FaLeaf } from "react-icons/fa";
 import Loader from "@/components/Loader";
+import Image from "next/image";
 
 // Dummy rewards data
 const rewardsData = [
@@ -81,7 +82,7 @@ const availableRewards = [
 
 export default function RewardsPage() {
   const [activeTab, setActiveTab] = useState("earned");
-  const [totalPoints, setTotalPoints] = useState(1300);
+  const [totalPoints] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
 
   // Simulate waiting for layout components to load
@@ -200,10 +201,12 @@ export default function RewardsPage() {
               className="overflow-hidden bg-white rounded-lg shadow-md transition-shadow hover:shadow-lg"
             >
               <div className="overflow-hidden h-48">
-                <img 
-                  src={reward.image} 
-                  alt={reward.title} 
+                <Image
+                  src={reward.image}
+                  alt={reward.title}
                   className="object-cover w-full h-full"
+                  width={400}
+                  height={300}
                 />
               </div>
               <div className="p-6">

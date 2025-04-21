@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { FaMedal, FaTrophy, FaCrown, FaLeaf, FaUser } from "react-icons/fa";
 import Loader from "@/components/Loader";
+import Image from "next/image";
 
 // Dummy leaderboard data
 const leaderboardData = [
@@ -109,8 +110,8 @@ const timePeriods = [
 
 export default function LeaderboardPage() {
   const [activePeriod, setActivePeriod] = useState("all-time");
-  const [userRank, setUserRank] = useState(12);
-  const [userPoints, setUserPoints] = useState(950);
+  const [userRank] = useState(12);
+  const [userPoints] = useState(950);
   const [isLoading, setIsLoading] = useState(true);
 
   // Simulate waiting for layout components to load
@@ -205,11 +206,13 @@ export default function LeaderboardPage() {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
-                      <div className="flex-shrink-0 w-10 h-10">
-                        <img
-                          className="w-10 h-10 rounded-full"
+                      <div className="flex-shrink-0 w-10 h-10 relative">
+                        <Image
+                          className="rounded-full"
                           src={user.avatar}
                           alt={user.name}
+                          fill
+                          sizes="40px"
                         />
                       </div>
                       <div className="ml-4">

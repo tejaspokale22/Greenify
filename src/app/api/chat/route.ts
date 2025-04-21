@@ -3,16 +3,6 @@ import { NextResponse } from 'next/server';
 // This is a placeholder for the actual Gemini API integration
 // You'll need to add your Gemini API key and implement the actual API calls
 
-const WASTE_MANAGEMENT_PROMPT = `You are an expert in waste management and environmental sustainability. 
-Your role is to provide accurate, helpful information about:
-1. Waste classification and proper disposal methods
-2. Recycling best practices
-3. Environmental impact of different waste types
-4. Sustainable waste management solutions
-5. Local waste management regulations and guidelines
-
-Please provide clear, concise answers focused specifically on waste management topics.`;
-
 const WASTE_MANAGEMENT_RESPONSES = {
   recycling: [
     "Recycling helps reduce landfill waste and conserve natural resources.",

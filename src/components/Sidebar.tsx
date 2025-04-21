@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Trash, Package, Gift, Trophy, Home, ChartBar, Menu, X } from "lucide-react";
+import { Trash, Package, Gift, Trophy, Home, Menu, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useUser } from "@clerk/nextjs";

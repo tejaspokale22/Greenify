@@ -8,6 +8,7 @@ import { toast } from 'react-hot-toast'
 import type { Report } from '@/lib/types'
 import { getReportById } from '@/db/actions'
 import Loader from '@/components/Loader'
+import Image from "next/image";
 
 export default function ViewReportPage() {
   const params = useParams()
@@ -187,10 +188,12 @@ export default function ViewReportPage() {
                     <div className="px-4 py-5 sm:p-6">
                       {report.imageUrl ? (
                         <div className="overflow-hidden rounded-lg border border-gray-200">
-                          <img 
-                            src={report.imageUrl} 
-                            alt={`Waste: ${report.wasteType}`} 
-                            className="w-full h-auto"
+                          <Image
+                            src={report.imageUrl}
+                            alt="Waste image"
+                            className="object-cover w-full h-full"
+                            width={800}
+                            height={600}
                           />
                         </div>
                       ) : (

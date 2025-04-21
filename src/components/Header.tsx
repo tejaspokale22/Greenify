@@ -7,8 +7,16 @@ import Link from "next/link";
 import { UserButton, useClerk, useUser } from "@clerk/nextjs";
 import { usePathname } from "next/navigation";
 
+// Define a specific interface for user data
+interface UserData {
+  clerkId: string;
+  name: string;
+  email: string;
+  imageUrl: string;
+}
+
 export default function Header() {
-  const [userData, setUserData] = useState<any>(null);
+  const [userData, setUserData] = useState<UserData | null>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { isSignedIn, user, isLoaded } = useUser();
   const { openSignIn } = useClerk();

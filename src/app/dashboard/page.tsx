@@ -25,11 +25,24 @@ import { useUser } from "@clerk/nextjs";
 // Cache expiration time in milliseconds (5 minutes)
 const CACHE_EXPIRATION = 5 * 60 * 1000;
 
+interface UserData {
+  name: string;
+  email: string;
+  id: string;
+}
+
+interface UserStats {
+  points: number;
+  reportsCount: number;
+  rank: string;
+  impact: string;
+}
+
 export default function DashboardPage() {
   const { isSignedIn, isLoaded, user } = useUser();
   const router = useRouter();
-  const [userData, setUserData] = useState<any>(null);
-  const [userStats, setUserStats] = useState({
+  const [userData, setUserData] = useState<UserData | null>(null);
+  const [userStats, setUserStats] = useState<UserStats>({
     points: 0,
     reportsCount: 0,
     rank: "Eco Warrior",

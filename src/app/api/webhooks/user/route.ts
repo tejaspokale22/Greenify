@@ -6,13 +6,31 @@ import { eq } from "drizzle-orm";
 
 const CLERK_WEBHOOK_SECRET_USER = process.env.CLERK_WEBHOOK_SECRET_USER!;
 
+interface WebhookEvent {
+  data: {
+    id: string;
+    first_name?: string;
+    last_name?: string;
+    full_name?: string;
+    image_url?: string;
+    email_addresses: Array<{
+      email_address: string;
+      id: string;
+    }>;
+    created_at: number;
+    updated_at: number;
+  };
+  object: string;
+  type: string;
+}
+
 export async function POST(req: NextRequest) {
   const body = await req.text();
   const headers = Object.fromEntries(req.headers.entries());
   try {
     // Verify webhook signature
     const wh = new Webhook(CLERK_WEBHOOK_SECRET_USER);
-    const evt = wh.verify(body, headers) as any; // Svix verification
+    const evt = wh.verify(body, headers) as WebhookEvent;
 
     const user = evt.data;
 

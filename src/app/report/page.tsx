@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "react-hot-toast";
 import { Report } from "@/lib/types";
 import Loader from "@/components/Loader";
+import Image from "next/image";
 
 // Types
 interface UserData {
@@ -484,10 +485,12 @@ export default function ReportPage() {
               {preview && (
                 <div className="overflow-hidden mt-8 rounded-xl border border-gray-200 shadow-lg">
                   <div className="relative bg-white aspect-video">
-                    <img
+                    <Image
                       src={preview}
                       alt="Waste preview"
                       className="object-contain w-full h-full"
+                      width={800}
+                      height={600}
                     />
                   </div>
                 </div>
@@ -589,7 +592,7 @@ export default function ReportPage() {
                   </button>
                 </div>
                 <p className="text-sm text-gray-500">
-                  Click 'Open Maps' to find your location, then share and copy
+                  Click &apos;Open Maps&apos; to find your location, then share and copy
                   the URL
                 </p>
               </div>

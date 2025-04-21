@@ -1,6 +1,19 @@
 import db from './index';
 import { Users, Reports, Rewards, CollectedWastes, Notifications, Transactions } from './schema';
-import { eq, sql, and, desc, ne } from 'drizzle-orm';
+import { eq, sql, and, desc } from 'drizzle-orm';
+
+// Define a type for verification result
+interface VerificationResult {
+  decompositionTime?: string;
+  commonSources?: string;
+  environmentalImpact?: string;
+  healthHazards?: string;
+  carbonFootprint?: string;
+  economicImpact?: string;
+  wasteReductionStrategies?: string;
+  recyclingDisposalMethods?: string;
+  [key: string]: string | undefined;
+}
 
 export async function createUser(
   clerkId: string,
@@ -46,7 +59,7 @@ export async function createReport(
   wasteType: string,
   amount: string,
   imageUrl?: string | null,
-  verificationResult?: any
+  verificationResult?: VerificationResult
 ) {
   try {
     const [report] = await db
@@ -275,7 +288,7 @@ export async function saveReward(userId: string, amount: number) {
   }
 }
 
-export async function saveCollectedWaste(reportId: number, collectorId: string, verificationResult: any) {
+export async function saveCollectedWaste(reportId: number, collectorId: string) {
   try {
     const [collectedWaste] = await db
       .insert(CollectedWastes)
@@ -283,23 +296,24 @@ export async function saveCollectedWaste(reportId: number, collectorId: string, 
         reportId,
         collectorId,
         collectionDate: new Date(),
-        status: 'verified',
       })
       .returning()
       .execute();
     return collectedWaste;
   } catch (error) {
     console.error("Error saving collected waste:", error);
-    throw error;
+    return null;
   }
 }
 
 export async function updateTaskStatus(reportId: number, newStatus: string, collectorId?: string) {
   try {
-    const updateData: any = { status: newStatus };
-    if (collectorId !== undefined) {
+    const updateData: Record<string, unknown> = { status: newStatus };
+    
+    if (collectorId) {
       updateData.collectorId = collectorId;
     }
+    
     const [updatedReport] = await db
       .update(Reports)
       .set(updateData)
@@ -309,7 +323,7 @@ export async function updateTaskStatus(reportId: number, newStatus: string, coll
     return updatedReport;
   } catch (error) {
     console.error("Error updating task status:", error);
-    throw error;
+    return null;
   }
 }
 

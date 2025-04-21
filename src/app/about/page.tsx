@@ -20,7 +20,7 @@ export default function AboutPage() {
           Revolutionizing Waste Management with AI
         </h1>
         <p className="mx-auto max-w-3xl text-xl text-gray-600">
-          We're on a mission to make waste management smarter, more efficient, and environmentally friendly through cutting-edge artificial intelligence technology.
+          We&apos;re on a mission to make waste management smarter, more efficient, and environmentally friendly through cutting-edge artificial intelligence technology.
         </p>
       </section>
 
@@ -107,9 +107,7 @@ function FeatureCard({ icon, title, description }: FeatureCardProps) {
   );
 }
 
-interface BenefitCardProps extends FeatureCardProps {}
-
-function BenefitCard({ icon, title, description }: BenefitCardProps) {
+function BenefitCard({ icon, title, description }: FeatureCardProps) {
   return (
     <div className="p-6 text-left bg-white rounded-lg shadow-md">
       <div className="flex items-center mb-4 text-2xl text-green-600">

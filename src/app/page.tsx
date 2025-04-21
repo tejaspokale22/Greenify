@@ -1,9 +1,7 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { ArrowRight, Leaf, Recycle, Users, Coins, MapPin } from 'lucide-react'
-import Link from 'next/link'
 import AnimatedGlobe from '@/components/AnimatedGlobe'
 import Footer from '@/components/Footer'
 import { Chatbot } from '@/components/Chatbot'
