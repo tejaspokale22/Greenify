@@ -6,12 +6,21 @@ Greenify is a smart, AI-driven web platform that redefines how waste is identifi
 
 ## 🌟 Key Highlights
 
-- ♻️ **AI-Based Waste Classification** via image uploads using **Gemini LLM**
-- 📍 **Live Location Tracking** and route management using **Google Maps API**
-- 🧠 **Expert Chatbot Integration** for sustainability tips & verification
-- 🏆 **Gamification System** to promote eco-conscious habits
-- 🗂️ **Role-based Dashboards** for Users and Collectors with automated backend AI processing
-- 🔐 **User Authentication via Clerk** for secure access and session management
+♻️ AI-Based Waste Classification via image uploads using Gemini LLM
+
+📍 Live Location Tracking and route management using Google Maps API
+
+🧠 Expert Chatbot Integration for sustainability tips & verification
+
+🏆 Gamification System to promote eco-conscious habits
+
+🗂️ Role-based Dashboards for Users and Collectors with automated backend AI processing
+
+🔐 User Authentication via Clerk for secure access and session management
+
+🗑️ Waste Tracking: Track real-time waste collection, type, quantity, and location using Google Maps API; Users can input waste generated manually alongside real-time updates from collectors.
+
+🔍 AI Waste Verification: Verify waste categorization by comparing uploaded images with AI-powered classification using Gemini LLM; ensures the accuracy of waste sorting and categorization.
 
 ---
 
@@ -35,25 +44,16 @@ Greenify is a smart, AI-driven web platform that redefines how waste is identifi
 > *(Screenshots are located in the main branch root)*
 
 ### 🏠 Homepage  
-![Homepage](screenshots/homepage.png)
-
-### 🔍 Waste Classification Module  
-![Classification](screenshots/classification.png)
-
-### 🚛 Collector Dashboard  
-![Dashboard](screenshots/dashboard.png)
-
-### 🧠 Gemini AI Chatbot  
-![Chatbot](screenshots/chatbot.png)
-
-### 📥 Waste Collection Interface  
-![Waste Collection](wastecollection.png)
+![Homepage](home.png)
 
 ### 📊 Waste Report Overview  
 ![Waste Report](wastereport.png)
 
-### 📄 Waste Report Details  
-![Report Details](wastereportdetails.png)
+### 📥 Waste Collection Interface  
+![Waste Collection](wastecollection.png)
+
+### 🧠 Gemini AI Chatbot  
+![Chatbot](chatbot.png)
 
 ### 🎯 Rewards & Gamification  
 ![Rewards](rewards.png)
