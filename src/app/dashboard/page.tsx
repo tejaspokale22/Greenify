@@ -13,7 +13,8 @@ import {
   BarChart,
   Plus,
   ArrowRight,
-  Loader2
+  Loader2,
+  RefreshCw
 } from "lucide-react";
 import { getRecentReports } from "@/db/actions";
 import { useRouter } from "next/navigation";
@@ -21,6 +22,8 @@ import Link from "next/link";
 import { Report } from "@/lib/types";
 import { useUser } from "@clerk/nextjs";
 
+// Cache expiration time in milliseconds (5 minutes)
+const CACHE_EXPIRATION = 5 * 60 * 1000;
 
 export default function DashboardPage() {
   const { isSignedIn, isLoaded, user } = useUser();
@@ -34,6 +37,7 @@ export default function DashboardPage() {
   });
   const [recentReports, setRecentReports] = useState<Report[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   // Load user data from localStorage on client-side only
   useEffect(() => {
@@ -61,41 +65,85 @@ export default function DashboardPage() {
     }
   }, [isLoaded, isSignedIn, router]);
 
-  useEffect(() => {
-    const fetchRecentReports = async () => {
-      try {
-        setIsLoading(true);
-        const reports = await getRecentReports(5);
-        // Convert null imageUrl to undefined to match Report type
-        const formattedReports = reports.map(report => ({
-          ...report,
-          imageUrl: report.imageUrl || undefined,
-          collectorId: report.collectorId || null
-        }));
-        setRecentReports(formattedReports as Report[]);
+  // Function to fetch reports from the database
+  const fetchRecentReports = async (forceRefresh = false) => {
+    try {
+      setIsLoading(true);
+      
+      // Check if we have cached data and it's not expired
+      const cachedData = localStorage.getItem("recentReports");
+      const cacheTimestamp = localStorage.getItem("recentReportsTimestamp");
+      
+      const now = new Date().getTime();
+      const isCacheValid = cacheTimestamp && 
+        (now - parseInt(cacheTimestamp)) < CACHE_EXPIRATION;
+      
+      // Use cached data if available, not expired, and not forcing refresh
+      if (cachedData && isCacheValid && !forceRefresh) {
+        const parsedReports = JSON.parse(cachedData);
+        setRecentReports(parsedReports);
         
-        // Update user stats based on reports
-        if (formattedReports.length > 0) {
+        // Update user stats based on cached reports
+        if (parsedReports.length > 0) {
           setUserStats(prev => ({
             ...prev,
-            reportsCount: reports.length,
-            points: reports.length * 10,
-            rank: reports.length > 20 ? "Eco Master" : reports.length > 10 ? "Eco Champion" : "Eco Warrior",
-            impact: reports.length > 15 ? "Significant" : reports.length > 5 ? "Positive" : "Growing"
+            reportsCount: parsedReports.length,
+            points: parsedReports.length * 10,
+            rank: parsedReports.length > 20 ? "Eco Master" : parsedReports.length > 10 ? "Eco Champion" : "Eco Warrior",
+            impact: parsedReports.length > 15 ? "Significant" : parsedReports.length > 5 ? "Positive" : "Growing"
           }));
         }
-      } catch (error) {
-        console.error("Error fetching recent reports:", error);
-      } finally {
+        
         setIsLoading(false);
+        return;
       }
-    };
+      
+      // Fetch fresh data from the database
+      const reports = await getRecentReports(5);
+      
+      // Convert null imageUrl to undefined to match Report type
+      const formattedReports = reports.map(report => ({
+        ...report,
+        imageUrl: report.imageUrl || undefined,
+        collectorId: report.collectorId || null
+      }));
+      
+      // Cache the formatted reports
+      localStorage.setItem("recentReports", JSON.stringify(formattedReports));
+      localStorage.setItem("recentReportsTimestamp", now.toString());
+      
+      setRecentReports(formattedReports as Report[]);
+      
+      // Update user stats based on reports
+      if (formattedReports.length > 0) {
+        setUserStats(prev => ({
+          ...prev,
+          reportsCount: reports.length,
+          points: reports.length * 10,
+          rank: reports.length > 20 ? "Eco Master" : reports.length > 10 ? "Eco Champion" : "Eco Warrior",
+          impact: reports.length > 15 ? "Significant" : reports.length > 5 ? "Positive" : "Growing"
+        }));
+      }
+    } catch (error) {
+      console.error("Error fetching recent reports:", error);
+    } finally {
+      setIsLoading(false);
+      setIsRefreshing(false);
+    }
+  };
 
-    // Fetch reports if user is signed in, regardless of userData
+  // Initial data load
+  useEffect(() => {
     if (isSignedIn) {
       fetchRecentReports();
     }
   }, [isSignedIn]);
+
+  // Handle manual refresh
+  const handleRefresh = () => {
+    setIsRefreshing(true);
+    fetchRecentReports(true);
+  };
 
   // Show loading state while checking authentication
   if (!isLoaded) {
@@ -213,13 +261,27 @@ export default function DashboardPage() {
               <h2 className="text-xl font-semibold text-gray-900">
                 Recent Activity
               </h2>
-              <Link 
-                href="/reports"
-                className="flex gap-1 items-center text-sm font-medium text-green-600 hover:text-green-700"
-              >
-                View All
-                <ArrowRight className="w-4 h-4" />
-              </Link>
+              <div className="flex gap-4 items-center">
+                <button 
+                  onClick={handleRefresh}
+                  className="flex gap-1 items-center text-sm font-medium text-green-600 hover:text-green-700"
+                  disabled={isRefreshing}
+                >
+                  {isRefreshing ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <RefreshCw className="w-4 h-4" />
+                  )}
+                  <span>Refresh</span>
+                </button>
+                <Link 
+                  href="/reports"
+                  className="flex gap-1 items-center text-sm font-medium text-green-600 hover:text-green-700"
+                >
+                  View All
+                  <ArrowRight className="w-4 h-4" />
+                </Link>
+              </div>
             </div>
             <div className="space-y-4">
               {isLoading ? (
