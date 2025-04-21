@@ -8,6 +8,7 @@ import AnimatedGlobe from '@/components/AnimatedGlobe'
 import Footer from '@/components/Footer'
 import { Chatbot } from '@/components/Chatbot'
 import Image from 'next/image'
+import { useUser, useClerk } from "@clerk/nextjs";
 
 const images = {
   recycling: "https://images.unsplash.com/photo-1611284446314-60a58ac0deb9?auto=format&fit=crop&q=80&w=1200",
@@ -17,6 +18,25 @@ const images = {
 };
 
 export default function Home() {
+  const { isSignedIn } = useUser();
+  const { openSignIn } = useClerk();
+  
+  const handleGetStarted = () => {
+    if (isSignedIn) {
+      window.location.href = "/dashboard";
+    } else {
+      openSignIn({
+        appearance: {
+          elements: {
+            rootBox: "rounded-xl",
+            card: "rounded-xl",
+          },
+        },
+        afterSignInUrl: "/dashboard",
+      });
+    }
+  };
+
   return (
     <div className="pt-10 min-h-screen bg-gradient-to-b from-green-50 to-white">
       {/* Hero Section */}
@@ -55,9 +75,10 @@ export default function Home() {
               </p>
               <div className="flex flex-col gap-3 sm:flex-row">
                 <motion.button 
+                  onClick={handleGetStarted}
                   className="flex justify-center items-center cursor-pointer hover:bg-green-600 px-4 py-2.5 text-base font-medium text-white bg-green-700 rounded-full shadow-lg transition-all sm:px-6 sm:py-3 sm:text-lg"
                 >
-                  Get Started
+                  {isSignedIn ? "Go to Dashboard" : "Get Started"}
                   <ArrowRight className="ml-2 w-4 h-4" />
                 </motion.button>
                 <motion.button 
@@ -195,9 +216,8 @@ export default function Home() {
               more sustainable future with Greenify.
             </p>
             <motion.button
-              whileHover={{ scale: 1.03 }}
               whileTap={{ scale: 0.98 }}
-              className="px-6 py-3 text-lg font-medium text-green-600 bg-white rounded-full shadow-lg transition-all sm:px-8 sm:py-4 sm:text-xl hover:bg-green-50"
+              className="px-6 py-3 text-lg font-medium text-green-600 bg-white rounded-full shadow-lg transition-all sm:px-8 sm:py-4 sm:text-xl"
             >
               Start Your Journey
             </motion.button>
@@ -205,8 +225,13 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Add WasteManagementChat component */}
-      <Chatbot />
+      {/* Add WasteManagementChat component with dark gradient */}
+      <div className="relative">
+        <div className="absolute inset-0 bg-gradient-to-b backdrop-blur-sm from-gray-900/90 to-gray-800/90" />
+        <div className="relative z-10">
+          <Chatbot />
+        </div>
+      </div>
 
       <Footer />
     </div>

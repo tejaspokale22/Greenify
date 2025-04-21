@@ -5,53 +5,80 @@ import { createReport, getRecentReports } from "@/db/actions";
 import { useRouter } from "next/navigation";
 import { toast } from "react-hot-toast";
 import { Report } from "@/lib/types";
+import Loader from "@/components/Loader";
+
+// Types
+interface UserData {
+  clerkId: string;
+  // Add other user data properties as needed
+}
+
+interface NewReport {
+  location: string;
+  type: string;
+  amount: string;
+}
+
+interface VerificationResult {
+  wasteType: string;
+  amount: string;
+  verificationResult: {
+    decompositionTime: string;
+    commonSources: string;
+    environmentalImpact: string;
+    healthHazards: string;
+    carbonFootprint: string;
+    economicImpact: string;
+    wasteReductionStrategies: string;
+    recyclingDisposalMethods: string;
+  };
+}
 
 const geminiApiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
 
 export default function ReportPage() {
-  if (typeof window === "undefined") return null; // Prevents SSR issues
-
-  const storedData = localStorage.getItem("userData");
-  const [userData, setUserData] = useState<any>(
-    storedData ? JSON.parse(storedData) : null
-  );
   const router = useRouter();
-
+  
+  // State Management
+  const [userData, setUserData] = useState<UserData | null>(null);
   const [reports, setReports] = useState<Report[]>([]);
-  console.log(reports);
-
   const [isLoadingReports, setIsLoadingReports] = useState(true);
-
-  const [newReport, setNewReport] = useState({
+  const [newReport, setNewReport] = useState<NewReport>({
     location: "",
     type: "",
     amount: "",
   });
-
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [verificationStatus, setVerificationStatus] = useState<
     "idle" | "verifying" | "success" | "failure"
   >("idle");
-  const [verificationResult, setVerificationResult] = useState<any>(null);
+  const [verificationResult, setVerificationResult] = useState<VerificationResult | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isClient, setIsClient] = useState(false);
 
-  const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
-  ) => {
-    const { name, value } = e.target;
-
-    // Validate location URL if it's a location input
-    if (name === "location" && value) {
+  // Initialize client-side state
+  useEffect(() => {
+    setIsClient(true);
+    const storedData = localStorage.getItem("userData");
+    if (storedData) {
       try {
-        new URL(value); // This will throw if URL is invalid
-      } catch {
-        toast.error("Please enter a valid URL");
-        return;
+        setUserData(JSON.parse(storedData));
+      } catch (error) {
+        console.error("Error parsing user data:", error);
+        localStorage.removeItem("userData");
       }
     }
+  }, []);
 
-    setNewReport({ ...newReport, [name]: value });
+  // File Handling Functions
+  const readFileAsBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -59,13 +86,11 @@ export default function ReportPage() {
       if (e.target.files && e.target.files[0]) {
         const selectedFile = e.target.files[0];
 
-        // Validate file type
         if (!selectedFile.type.startsWith("image/")) {
           toast.error("Please upload an image file");
           return;
         }
 
-        // Validate file size (10MB limit)
         if (selectedFile.size > 10 * 1024 * 1024) {
           toast.error("File size should be less than 10MB");
           return;
@@ -87,15 +112,25 @@ export default function ReportPage() {
     }
   };
 
-  const readFileAsBase64 = (file: File): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result as string);
-      reader.onerror = reject;
-      reader.readAsDataURL(file);
-    });
+  // Input Handling
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
+    const { name, value } = e.target;
+
+    if (name === "location" && value) {
+      try {
+        new URL(value);
+      } catch {
+        toast.error("Please enter a valid URL");
+        return;
+      }
+    }
+
+    setNewReport({ ...newReport, [name]: value });
   };
 
+  // Verification Functions
   const handleVerify = async () => {
     if (!file) {
       toast.error("No file selected");
@@ -186,19 +221,18 @@ export default function ReportPage() {
       const jsonMatch = text.match(/\{[\s\S]*\}/);
       const jsonText = jsonMatch ? jsonMatch[0] : null;
       if (jsonText) {
-        // Clean the JSON string before parsing
         const cleanedJson = jsonText
-          .replace(/'/g, '"') // Replace single quotes with double quotes
-          .replace(/(\w+):/g, '"$1":') // Add quotes around property names
-          .replace(/,\s*}/g, "}") // Remove trailing commas
-          .replace(/,\s*]/g, "]"); // Remove trailing commas in arrays
+          .replace(/'/g, '"')
+          .replace(/(\w+):/g, '"$1":')
+          .replace(/,\s*}/g, "}")
+          .replace(/,\s*]/g, "]");
 
         try {
           const parsedResult = JSON.parse(cleanedJson);
-          console.log(parsedResult);
 
           if (parsedResult.imageType === false) {
             toast.error("Please upload an image related to waste.");
+            setVerificationStatus("idle");
             return;
           }
 
@@ -246,9 +280,10 @@ export default function ReportPage() {
     }
   };
 
+  // Form Submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (verificationStatus !== "success" || !userData) {
+    if (verificationStatus !== "success" || !userData || !verificationResult) {
       toast.error("Please verify the waste before submitting or log in.");
       return;
     }
@@ -264,7 +299,6 @@ export default function ReportPage() {
         verificationResult.verificationResult
       );
 
-      // Create a properly typed report object
       const formattedReport: Report = {
         id: report.id,
         userId: userData.clerkId,
@@ -298,11 +332,12 @@ export default function ReportPage() {
     }
   };
 
+  // Data Fetching
   useEffect(() => {
     const fetchRecentReports = async () => {
       try {
         setIsLoadingReports(true);
-        const recentReports = await getRecentReports(5); // Fetch 5 most recent reports
+        const recentReports = await getRecentReports(5);
         setReports(recentReports as Report[]);
       } catch (error) {
         console.error("Error fetching recent reports:", error);
@@ -314,6 +349,80 @@ export default function ReportPage() {
 
     fetchRecentReports();
   }, []);
+
+  // Render Functions
+  const renderLoadingState = () => (
+    <div className="flex justify-center items-center py-12">
+      <Loader />
+      <span className="ml-2 text-gray-500">Loading recent reports...</span>
+    </div>
+  );
+
+  const renderEmptyState = () => (
+    <div className="py-12 text-center">
+      <Package className="mx-auto mb-4 w-12 h-12 text-gray-400" />
+      <p className="text-gray-500">No reports yet. Be the first to report waste!</p>
+    </div>
+  );
+
+  const renderReportsTable = () => (
+    <table className="w-full">
+      <thead className="sticky top-0 z-10 bg-gray-50">
+        <tr>
+          <th className="px-8 py-4 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
+            Location
+          </th>
+          <th className="px-8 py-4 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
+            Type
+          </th>
+          <th className="px-8 py-4 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
+            Amount
+          </th>
+          <th className="px-8 py-4 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
+            Date
+          </th>
+        </tr>
+      </thead>
+      <tbody className="divide-y divide-gray-200">
+        {reports.map((report) => (
+          <tr
+            key={report.id}
+            className="transition-colors duration-200 hover:bg-gray-50"
+          >
+            <td className="px-8 py-5">
+              <div className="flex items-center">
+                <MapPin className="mr-3 w-5 h-5 text-green-500" />
+                <a
+                  href={report.location}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sm font-medium text-green-600 hover:text-green-700 hover:underline"
+                >
+                  View Location
+                </a>
+              </div>
+            </td>
+            <td className="px-8 py-5 text-sm font-medium text-gray-900">
+              {report.wasteType}
+            </td>
+            <td className="px-8 py-5 text-sm font-medium text-gray-900">
+              {report.amount}
+            </td>
+            <td className="px-8 py-5 text-sm text-gray-500">
+              {report.createdAt
+                ? new Date(report.createdAt).toLocaleDateString()
+                : "N/A"}
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  );
+
+  // Don't render anything until client-side hydration is complete
+  if (!isClient) {
+    return null;
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-green-50 to-white">
@@ -392,18 +501,16 @@ export default function ReportPage() {
                 className={`w-full flex items-center justify-center gap-3 px-8 py-4 text-lg font-medium rounded-xl transition-all duration-300 ${
                   !file
                     ? "text-gray-400 bg-gray-100 cursor-not-allowed"
-                    : "text-white bg-green-600 shadow-lg cursor-pointer hover:bg-green-700 hover:shadow-xl"
-                }`}
+                    : "text-white bg-green-600 shadow-lg cursor-pointer hover:shadow-xl"
+                } ${verificationStatus === "verifying" ? "hover:bg-green-600 cursor-not-allowed" : "hover:bg-green-700"}`}
               >
                 {verificationStatus === "verifying" ? (
                   <>
-                    <div className="w-5 h-5 rounded-full border-b-2 border-white animate-spin"></div>
+                    <Loader />
                     <span>Analyzing Waste...</span>
                   </>
                 ) : (
-                  <>
-                    <span>Analyze Waste</span>
-                  </>
+                  <span>Analyze Waste</span>
                 )}
               </button>
             </div>
@@ -543,7 +650,7 @@ export default function ReportPage() {
             >
               {isSubmitting ? (
                 <>
-                  <div className="w-5 h-5 rounded-full border-b-2 border-white animate-spin"></div>
+                  <Loader />
                   <span>Submitting Report...</span>
                 </>
               ) : (
@@ -560,73 +667,11 @@ export default function ReportPage() {
           </h2>
           <div className="overflow-hidden bg-white rounded-2xl shadow-lg">
             <div className="max-h-[480px] overflow-y-auto">
-              {isLoadingReports ? (
-                <div className="flex justify-center items-center py-12">
-                  <div className="w-5 h-5 rounded-full border-b-2 border-green-500 animate-spin"></div>
-                  <span className="ml-2 text-gray-500">
-                    Loading recent reports...
-                  </span>
-                </div>
-              ) : reports.length > 0 ? (
-                <table className="w-full">
-                  <thead className="sticky top-0 z-10 bg-gray-50">
-                    <tr>
-                      <th className="px-8 py-4 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
-                        Location
-                      </th>
-                      <th className="px-8 py-4 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
-                        Type
-                      </th>
-                      <th className="px-8 py-4 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
-                        Amount
-                      </th>
-                      <th className="px-8 py-4 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
-                        Date
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-200">
-                    {reports.map((report) => (
-                      <tr
-                        key={report.id}
-                        className="transition-colors duration-200 hover:bg-gray-50"
-                      >
-                        <td className="px-8 py-5">
-                          <div className="flex items-center">
-                            <MapPin className="mr-3 w-5 h-5 text-green-500" />
-                            <a
-                              href={report.location}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-sm font-medium text-green-600 hover:text-green-700 hover:underline"
-                            >
-                              View Location
-                            </a>
-                          </div>
-                        </td>
-                        <td className="px-8 py-5 text-sm font-medium text-gray-900">
-                          {report.wasteType}
-                        </td>
-                        <td className="px-8 py-5 text-sm font-medium text-gray-900">
-                          {report.amount}
-                        </td>
-                        <td className="px-8 py-5 text-sm text-gray-500">
-                          {report.createdAt
-                            ? new Date(report.createdAt).toLocaleDateString()
-                            : "N/A"}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              ) : (
-                <div className="py-12 text-center">
-                  <Package className="mx-auto mb-4 w-12 h-12 text-gray-400" />
-                  <p className="text-gray-500">
-                    No reports yet. Be the first to report waste!
-                  </p>
-                </div>
-              )}
+              {isLoadingReports
+                ? renderLoadingState()
+                : reports.length > 0
+                ? renderReportsTable()
+                : renderEmptyState()}
             </div>
           </div>
         </div>
