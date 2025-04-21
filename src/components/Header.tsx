@@ -8,15 +8,18 @@ import { UserButton, useClerk, useUser } from "@clerk/nextjs";
 import { usePathname } from "next/navigation";
 
 export default function Header() {
-  if (typeof window === "undefined") return null; // Prevents SSR issues
-
-  const storedData = localStorage.getItem("userData");
-  const [userData, setUserData] = useState<any>(
-    storedData ? JSON.parse(storedData) : null
-  );
+  const [userData, setUserData] = useState<any>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { isSignedIn, user, isLoaded } = useUser();
   const { openSignIn } = useClerk();
+
+  useEffect(() => {
+    // Only access localStorage on the client side
+    const storedData = localStorage.getItem("userData");
+    if (storedData) {
+      setUserData(JSON.parse(storedData));
+    }
+  }, []);
 
   useEffect(() => {
     if (isSignedIn && user) {
@@ -27,11 +30,11 @@ export default function Header() {
         imageUrl: user.imageUrl || "",
       };
       localStorage.setItem("userData", JSON.stringify(userData));
+      setUserData(userData);
     } else {
       localStorage.removeItem("userData");
+      setUserData(null);
     }
-    const userData = localStorage.getItem("userData");
-    setUserData(userData);
   }, [isSignedIn, user]);
 
   const handleLogin = () => {
