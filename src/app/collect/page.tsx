@@ -567,182 +567,210 @@ export default function CollectPage() {
       )}
 
       {selectedTask && (
-        <div className="flex fixed inset-0 justify-center items-center p-4 bg-black bg-opacity-50">
-          <div className="p-6 space-y-6 w-full max-w-2xl bg-white rounded-lg shadow-xl">
-            <div className="flex justify-between items-center">
-              <h2 className="text-xl font-semibold text-gray-900">
-                Verify Collection
-              </h2>
-              <button
-                onClick={() => setSelectedTask(null)}
-                className="p-1 text-gray-400 rounded-full transition-colors cursor-pointer hover:text-gray-500 hover:bg-gray-100"
-                aria-label="Close modal"
-              >
-                <svg
-                  className="w-6 h-6"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                </svg>
-              </button>
-            </div>
+        <div className="overflow-y-auto fixed inset-0 z-50">
+          <div className="flex justify-center items-center px-4 pt-4 pb-20 min-h-screen text-center sm:block sm:p-0">
+            <div 
+              className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" 
+              aria-hidden="true"
+              onClick={() => setSelectedTask(null)}
+            ></div>
 
-            <div className="space-y-4">
-              <div>
-                <h3 className="mb-2 text-sm font-medium text-gray-700">
-                  Original Image
-                </h3>
-                {selectedTask.imageUrl && (
-                  <div className="overflow-hidden relative rounded-lg aspect-video">
-                    <Image
-                      src={selectedTask.imageUrl}
-                      alt="Original waste"
-                      fill
-                      className="object-cover"
-                    />
-                  </div>
-                )}
-              </div>
-
-              <div>
-                <h3 className="mb-2 text-sm font-medium text-gray-700">
-                  Upload Verification Photo
-                </h3>
-                <div className="flex justify-center px-6 pt-5 pb-6 mt-1 rounded-lg border-2 border-gray-300 border-dashed">
-                  <div className="space-y-1 text-center">
-                    <Upload className="mx-auto w-12 h-12 text-gray-400" />
-                    <div className="flex text-sm text-gray-600">
-                      <label
-                        htmlFor="file-upload"
-                        className="relative font-medium text-green-600 bg-white rounded-md cursor-pointer hover:text-green-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-green-500"
-                      >
-                        <span>Upload a file</span>
-                        <input
-                          id="file-upload"
-                          name="file-upload"
-                          type="file"
-                          className="sr-only"
-                          accept="image/*"
-                          onChange={handleFileChange}
-                        />
-                      </label>
-                      <p className="pl-1">or drag and drop</p>
-                    </div>
-                    <p className="text-xs text-gray-500">
-                      PNG, JPG, GIF up to 10MB
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {preview && (
-                <div>
-                  <h3 className="mb-2 text-sm font-medium text-gray-700">
-                    Verification Image
-                  </h3>
-                  <div className="overflow-hidden relative rounded-lg aspect-video">
-                    <Image
-                      src={preview}
-                      alt="Verification"
-                      fill
-                      className="object-cover"
-                    />
-                  </div>
-                </div>
-              )}
-
-              {verificationDetails && (
-                <div>
-                  <h3 className="mb-2 text-sm font-medium text-gray-700">
-                    Verification Details
-                  </h3>
-                  <div className="p-4 space-y-2 bg-gray-50 rounded-lg">
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Same Location:</span>
-                      <span className="font-medium">
-                        {verificationDetails.sameLocation ? "Yes" : "No"}
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Waste Present:</span>
-                      <span className="font-medium">
-                        {verificationDetails.firstImageHasWaste ? "Yes" : "No"}
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Cleanup Status:</span>
-                      <span className="font-medium">
-                        {verificationDetails.cleanupStatus}
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Waste Type:</span>
-                      <span className="font-medium">
-                        {verificationDetails.wasteType}
-                      </span>
-                    </div>
-                    <div className="mt-4">
-                      <span className="text-gray-600">Comments:</span>
-                      <p className="mt-1 text-sm text-gray-700">
-                        {verificationDetails.comments}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {verificationStatus === "success" && verificationResult && (
-                <div className="p-4 bg-green-50 rounded-lg">
-                  <div className="flex items-center space-x-2">
-                    <CheckCircle className="text-green-500" size={20} />
-                    <div>
-                      <h4 className="text-sm font-medium text-green-800">
-                        Verification Successful
-                      </h4>
-                      <p className="mt-1 text-sm text-green-700">
-                        Your collection has been verified successfully. You&apos;ve earned a reward!
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {verificationStatus === "failure" && (
-                <div className="p-4 bg-red-50 rounded-lg">
-                  <div className="flex items-center space-x-2">
+            <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+            
+            <div className="inline-block overflow-hidden text-left align-bottom bg-white rounded-lg shadow-xl transition-all transform sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full">
+              <div className="px-4 pt-5 pb-4 bg-white sm:p-6 sm:pb-4">
+                <div className="flex justify-between items-center mb-4">
+                  <h2 className="text-xl font-semibold text-gray-900">
+                    Verify Collection
+                  </h2>
+                  <button
+                    onClick={() => setSelectedTask(null)}
+                    className="p-1 text-gray-400 rounded-full transition-colors cursor-pointer hover:text-gray-500 hover:bg-gray-100"
+                    aria-label="Close modal"
+                  >
                     <svg
-                      className="w-5 h-5 text-red-400"
-                      viewBox="0 0 20 20"
-                      fill="currentColor"
+                      className="w-6 h-6"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
                     >
                       <path
-                        fillRule="evenodd"
-                        d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                        clipRule="evenodd"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M6 18L18 6M6 6l12 12"
                       />
                     </svg>
-                    <div>
-                      <h4 className="text-sm font-medium text-red-800">
-                        Verification Failed
-                      </h4>
-                      <p className="mt-1 text-sm text-red-700">
-                        {verificationDetails
-                          ? "The verification criteria were not met. Please ensure the images are from the same location and the waste has been fully cleaned."
-                          : "Please try again with a clearer image."}
-                      </p>
+                  </button>
+                </div>
+
+                <div className="space-y-4 max-h-[70vh] overflow-y-auto pr-2">
+                  <div>
+                    <h3 className="mb-2 text-sm font-medium text-gray-700">
+                      Original Image
+                    </h3>
+                    {selectedTask.imageUrl && (
+                      <div className="overflow-hidden relative rounded-lg aspect-video">
+                        <Image
+                          src={selectedTask.imageUrl}
+                          alt="Original waste"
+                          fill
+                          className="object-cover"
+                        />
+                      </div>
+                    )}
+                  </div>
+
+                  <div>
+                    <h3 className="mb-2 text-sm font-medium text-gray-700">
+                      Upload Verification Photo
+                    </h3>
+                    <div className="flex justify-center px-6 pt-5 pb-6 mt-1 rounded-lg border-2 border-gray-300 border-dashed">
+                      <div className="space-y-1 text-center">
+                        <Upload className="mx-auto w-12 h-12 text-gray-400" />
+                        <div className="flex text-sm text-gray-600">
+                          <label
+                            htmlFor="file-upload"
+                            className="relative font-medium text-green-600 bg-white rounded-md cursor-pointer hover:text-green-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-green-500"
+                          >
+                            <span>Upload a file</span>
+                            <input
+                              id="file-upload"
+                              name="file-upload"
+                              type="file"
+                              className="sr-only"
+                              accept="image/*"
+                              onChange={handleFileChange}
+                            />
+                          </label>
+                          <p className="pl-1">or drag and drop</p>
+                        </div>
+                        <p className="text-xs text-gray-500">
+                          PNG, JPG, GIF up to 10MB
+                        </p>
+                      </div>
                     </div>
                   </div>
-                </div>
-              )}
 
-              <div className="flex justify-end space-x-3">
+                  {preview && (
+                    <div>
+                      <h3 className="mb-2 text-sm font-medium text-gray-700">
+                        Verification Image
+                      </h3>
+                      <div className="overflow-hidden relative rounded-lg aspect-video">
+                        <Image
+                          src={preview}
+                          alt="Verification"
+                          fill
+                          className="object-cover"
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  {verificationDetails && (
+                    <div>
+                      <h3 className="mb-2 text-sm font-medium text-gray-700">
+                        Verification Details
+                      </h3>
+                      <div className="p-4 space-y-2 bg-gray-50 rounded-lg">
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Same Location:</span>
+                          <span className="font-medium">
+                            {verificationDetails.sameLocation ? "Yes" : "No"}
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Waste Present:</span>
+                          <span className="font-medium">
+                            {verificationDetails.firstImageHasWaste ? "Yes" : "No"}
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Cleanup Status:</span>
+                          <span className="font-medium">
+                            {verificationDetails.cleanupStatus}
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Waste Type:</span>
+                          <span className="font-medium">
+                            {verificationDetails.wasteType}
+                          </span>
+                        </div>
+                        <div className="mt-4">
+                          <span className="text-gray-600">Comments:</span>
+                          <p className="mt-1 text-sm text-gray-700">
+                            {verificationDetails.comments}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {verificationStatus === "success" && verificationResult && (
+                    <div className="p-4 bg-green-50 rounded-lg">
+                      <div className="flex items-center space-x-2">
+                        <CheckCircle className="text-green-500" size={20} />
+                        <div>
+                          <h4 className="text-sm font-medium text-green-800">
+                            Verification Successful
+                          </h4>
+                          <p className="mt-1 text-sm text-green-700">
+                            Your collection has been verified successfully. You&apos;ve earned a reward!
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {verificationStatus === "failure" && (
+                    <div className="p-4 bg-red-50 rounded-lg">
+                      <div className="flex items-center space-x-2">
+                        <svg
+                          className="w-5 h-5 text-red-400"
+                          viewBox="0 0 20 20"
+                          fill="currentColor"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
+                        <div>
+                          <h4 className="text-sm font-medium text-red-800">
+                            Verification Failed
+                          </h4>
+                          <p className="mt-1 text-sm text-red-700">
+                            {verificationDetails
+                              ? "The verification criteria were not met. Please ensure the images are from the same location and the waste has been fully cleaned."
+                              : "Please try again with a clearer image."}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+              
+              <div className="px-4 py-3 bg-gray-50 sm:px-6 sm:flex sm:flex-row-reverse">
+                <button
+                  onClick={handleVerify}
+                  disabled={!file || verificationStatus === "verifying"}
+                  className="inline-flex justify-center px-4 py-2 w-full text-base font-medium text-white bg-green-600 rounded-md border border-transparent shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 sm:ml-3 sm:w-auto sm:text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {verificationStatus === "verifying" ? (
+                    <div className="flex items-center space-x-2">
+                      <div className="w-4 h-4">
+                        <Loader />
+                      </div>
+                      <span>Verifying...</span>
+                    </div>
+                  ) : (
+                    "Verify"
+                  )}
+                </button>
                 <button
                   onClick={() => {
                     setSelectedTask(null);
@@ -751,32 +779,13 @@ export default function CollectPage() {
                     setFile(null);
                     setPreview(null);
                   }}
-                  className="px-3 py-1.5 text-sm font-medium text-gray-700 bg-white rounded-md border border-gray-300 transition-colors cursor-pointer hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+                  className="inline-flex justify-center px-4 py-2 mt-3 w-full text-base font-medium text-gray-700 bg-white rounded-md border border-gray-300 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
                 >
                   {verificationStatus === "success" ||
                   verificationStatus === "failure"
                     ? "Close"
                     : "Cancel"}
                 </button>
-                {verificationStatus !== "success" &&
-                  verificationStatus !== "failure" && (
-                    <button
-                      onClick={handleVerify}
-                      disabled={!file || verificationStatus === "verifying"}
-                      className="px-3 py-1.5 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      {verificationStatus === "verifying" ? (
-                        <div className="flex items-center space-x-2">
-                          <div className="w-4 h-4">
-                            <Loader />
-                          </div>
-                          <span>Verifying...</span>
-                        </div>
-                      ) : (
-                        "Verify"
-                      )}
-                    </button>
-                  )}
               </div>
             </div>
           </div>
