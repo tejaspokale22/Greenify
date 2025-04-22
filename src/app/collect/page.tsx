@@ -28,22 +28,53 @@ const geminiApiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
 
 const ITEMS_PER_PAGE = 5;
 
+interface Task {
+  id: number;
+  userId: string;
+  location: string;
+  wasteType: string;
+  amount: string;
+  status: string;
+  collectorId: string;
+  verificationResult: any;
+  imageUrl: string;
+  createdAt: Date;
+  date?: string;
+}
+
+interface VerificationDetails {
+  sameLocation: boolean;
+  firstImageHasWaste: boolean;
+  cleanupStatus: string;
+  wasteType: string;
+  comments: string;
+}
+
+interface CollectedWaste {
+  id: number;
+  status: string;
+  collectorId: string;
+  reportId: number;
+  collectionDate: Date;
+  comment: string | null;
+}
+
 export default function CollectPage() {
   const router = useRouter();
   const [isClient, setIsClient] = useState(false);
 
-  const [user, setUser] = useState(null);
-  const [tasks, setTasks] = useState([]);
+  const [user, setUser] = useState<any>(null);
+  const [tasks, setTasks] = useState<Task[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(true);
-  const [hoveredWasteType, setHoveredWasteType] = useState(null);
+  const [hoveredWasteType, setHoveredWasteType] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedTask, setSelectedTask] = useState(null);
-  const [verificationStatus, setVerificationStatus] = useState("idle");
-  const [verificationResult, setVerificationResult] = useState(null);
-  const [file, setFile] = useState(null);
-  const [preview, setPreview] = useState(null);
-  const [verificationDetails, setVerificationDetails] = useState(null);
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+  const [verificationStatus, setVerificationStatus] = useState<"idle" | "verifying" | "success" | "failure">("idle");
+  const [verificationResult, setVerificationResult] = useState<CollectedWaste | null>(null);
+  const [file, setFile] = useState<File | null>(null);
+  const [preview, setPreview] = useState<string | null>(null);
+  const [verificationDetails, setVerificationDetails] = useState<VerificationDetails | null>(null);
 
   useEffect(() => {
     setIsClient(true);
@@ -60,7 +91,7 @@ export default function CollectPage() {
     return diffDays;
   };
 
-  const handleFileChange = (e: React.ChangeEvent) => {
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     try {
       if (e.target.files && e.target.files[0]) {
         const selectedFile = e.target.files[0];
@@ -88,7 +119,7 @@ export default function CollectPage() {
     }
   };
 
-  const readFileAsBase64 = (file: File): Promise => {
+  const readFileAsBase64 = (file: File): Promise<string> => {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.onload = () => resolve(reader.result as string);
@@ -234,7 +265,7 @@ export default function CollectPage() {
       const jsonText = jsonMatch ? jsonMatch[0] : null;
 
       if (jsonText) {
-        const parsedResult = JSON.parse(jsonText);
+        const parsedResult = JSON.parse(jsonText) as VerificationDetails;
         setVerificationDetails(parsedResult);
 
         const {
@@ -244,12 +275,10 @@ export default function CollectPage() {
           comments,
         } = parsedResult;
 
-        // @ts-ignore
         if (sameLocation && firstImageHasWaste && cleanupStatus === "fully cleaned") {
           const collectedWaste = await createCollectedWaste(
             selectedTask.id,
-            // @ts-ignore
-            (user as any).clerkId,
+            user?.clerkId,
             comments
           );
 
@@ -257,20 +286,17 @@ export default function CollectPage() {
             const updatedReport = await updateTaskStatus(
               selectedTask.id,
               "verified",
-              // @ts-ignore
-              (user as any).clerkId
+              user?.clerkId
             );
 
             if (updatedReport) {
               await updateRewardPoints(
-                // @ts-ignore
-                (user as any).clerkId,
+                user?.clerkId,
                 50
               );
 
               await createNotification(
-                // @ts-ignore
-                (user as any).clerkId,
+                user?.clerkId,
                 `You earned 50 points for successfully collecting waste at ${selectedTask.location}!`,
                 "reward"
               );
@@ -285,8 +311,7 @@ export default function CollectPage() {
                     ? {
                         ...task,
                         status: "verified",
-                        // @ts-ignore
-                        collectorId: (user as any).clerkId,
+                        collectorId: user?.clerkId,
                         verificationResult: collectedWaste,
                       }
                     : task
@@ -322,385 +347,418 @@ export default function CollectPage() {
 
   const handleStartCollection = (taskId: string) => {
     setSelectedTask(
-      tasks.find((task: Report) => task.id?.toString() === taskId) || null
+      tasks.find((task) => task.id?.toString() === taskId) || null
     );
   };
 
   return (
-    
+    <div className="container px-4 py-8 mx-auto">
       {!isClient ? (
-        
-          
-        
+        <div className="flex justify-center items-center min-h-screen">
+          <Loader />
+        </div>
       ) : (
-        
-          
-            
+        <div className="space-y-6">
+          <div className="flex justify-between items-center">
+            <h1 className="text-2xl font-bold text-gray-900">
               Waste Collection Tasks
-            
-
-            
-              
-                
-              
-               setSearchTerm(e.target.value)}
+            </h1>
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 text-gray-400 transform -translate-y-1/2" size={20} />
+              <input
+                type="text"
+                placeholder="Search by location..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
                 className="py-2 pr-4 pl-10 w-full text-sm bg-white rounded-lg border border-gray-300 focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-500/20"
               />
-            
-          
+            </div>
+          </div>
 
           {loading ? (
-            
-              
-                
-                Loading tasks...
-              
-            
+            <div className="flex justify-center items-center py-12">
+              <Loader />
+              <span className="ml-2 text-gray-600">Loading tasks...</span>
+            </div>
           ) : (
-            
+            <div className="space-y-4">
               {paginatedTasks.length === 0 ? (
-                
-                  
-                  
+                <div className="py-12 text-center">
+                  <div className="text-lg text-gray-500">
                     No tasks found
-                  
-                  
+                  </div>
+                  <div className="mt-2 text-sm text-gray-400">
                     {searchTerm
                       ? "No tasks match your search criteria."
                       : "There are no waste collection tasks available."}
-                  
-                
+                  </div>
+                </div>
               ) : (
-                
+                <div className="grid gap-4">
                   {paginatedTasks.map((task) => (
-                    
-                      
-                        
-                          
-                            
-                            
-                              See Location
-                            
-                          
-                          
+                    <div
+                      key={task.id}
+                      className="p-4 space-y-4 bg-white rounded-lg shadow"
+                    >
+                      <div className="flex justify-between items-center">
+                        <div className="flex items-center space-x-2">
+                          <MapPin className="text-gray-400" size={20} />
+                          <span className="text-gray-600">See Location</span>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Clock className="text-gray-400" size={20} />
+                          <span className="text-gray-600">
                             {task.status === "pending"
                               ? "Pending"
                               : task.status === "in_progress"
                               ? "In Progress"
                               : "Verified"}
-                          
-                        
-                      
+                          </span>
+                        </div>
+                      </div>
 
-                      
-                        
-                          
-                            
-                            
-                              
-                                  setHoveredWasteType(task.wasteType)
+                      <div className="grid grid-cols-3 gap-4">
+                        <div
+                          onMouseEnter={() => setHoveredWasteType(task.wasteType)}
+                          onMouseLeave={() => setHoveredWasteType(null)}
+                          className="block truncate cursor-pointer"
+                        >
+                          <div className="flex items-center space-x-2">
+                            <Trash2 className="text-gray-400" size={20} />
+                            <span className="text-gray-600">{task.wasteType}</span>
+                          </div>
+                          {hoveredWasteType === task.wasteType && (
+                            <div className="mt-1 text-sm text-gray-500">
+                              {task.wasteType}
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="flex items-center space-x-2">
+                          <Weight className="text-gray-400" size={20} />
+                          <span className="text-gray-600">
+                            {task.amount || "N/A"}
+                          </span>
+                        </div>
+
+                        <div className="flex items-center space-x-2">
+                          <Calendar className="text-gray-400" size={20} />
+                          <span className="text-gray-600">
+                            {task.createdAt
+                              ? task.createdAt.toLocaleDateString()
+                              : "No date"}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="flex justify-between items-center">
+                        <div className="text-sm text-gray-500">
+                          {task.createdAt && (
+                            <span>
+                              {typeof getDaysAgo(task.createdAt) === "string"
+                                ? getDaysAgo(task.createdAt)
+                                : `${getDaysAgo(task.createdAt)} ${
+                                    getDaysAgo(task.createdAt) === 1
+                                      ? "day"
+                                      : "days"
+                                  } ago`}
+                            </span>
+                          )}
+                        </div>
+
+                        <div className="flex items-center space-x-2">
+                          {task.status === "pending" && (
+                            <>
+                              <button
+                                onClick={() =>
+                                  handleViewDetails(task.id?.toString() || "")
                                 }
-                                onMouseLeave={() => setHoveredWasteType(null)}
-                                className="block truncate cursor-pointer"
+                                className="rounded-md bg-white px-3 py-1.5 text-sm font-medium text-green-600 border border-green-600 hover:bg-green-50 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 cursor-pointer"
                               >
-                                {task.wasteType}
-                              
-                              {hoveredWasteType === task.wasteType && (
-                                
-                                  {task.wasteType}
-                                
-                              )}
-                            
-                          
-                          
-                            
-                            
-                              {task.amount || "N/A"}
-                            
-                          
-                          
-                            
-                            
-                              {task.createdAt
-                                ? task.createdAt.toLocaleDateString()
-                                : "No date"}
-                            
-                          
-                        
-
-                        
-                          
-                            {task.createdAt && (
-                              
-                                
-                                {typeof getDaysAgo(task.createdAt) === "string"
-                                  ? getDaysAgo(task.createdAt)
-                                  : `${getDaysAgo(task.createdAt)} ${
-                                      getDaysAgo(task.createdAt) === 1
-                                        ? "day"
-                                        : "days"
-                                    } ago`}
-                              
+                                View Details
+                              </button>
+                              <button
+                                onClick={() =>
+                                  handleStartCollection(
+                                    task.id?.toString() || ""
+                                  )
+                                }
+                                className="rounded-md bg-green-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 cursor-pointer"
+                              >
+                                Start Collection
+                              </button>
+                            </>
+                          )}
+                          {task.status === "in_progress" &&
+                            task.collectorId === user?.id && (
+                              <button
+                                onClick={() => setSelectedTask(task)}
+                                className="rounded-md bg-green-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 cursor-pointer"
+                              >
+                                Complete & Verify
+                              </button>
                             )}
-                          
-                          
-                            {task.status === "pending" && (
-                              <>
-                                
-                                    handleViewDetails(task.id?.toString() || "")
-                                  }
-                                  className="rounded-md bg-white px-3 py-1.5 text-sm font-medium text-green-600 border border-green-600 hover:bg-green-50 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 cursor-pointer"
-                                >
-                                  View Details
-                                
-                                
-                                    handleStartCollection(
-                                      task.id?.toString() || ""
-                                    )
-                                  }
-                                  className="rounded-md bg-green-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 cursor-pointer"
-                                >
-                                  Start Collection
-                                
-                              
+                          {task.status === "in_progress" &&
+                            task.collectorId !== user?.id && (
+                              <span className="text-sm text-gray-500">
+                                In progress by another collector...
+                              </span>
                             )}
-                            {task.status === "in_progress" &&
-                              // @ts-ignore
-                              task.collectorId === (user as any)?.id && (
-                                 setSelectedTask(task)}
-                                  className="rounded-md bg-green-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 cursor-pointer"
-                                >
-                                  Complete & Verify
-                                
-                              )}
-                            {task.status === "in_progress" &&
-                              // @ts-ignore
-                              task.collectorId !== (user as any)?.id && (
-                                
-                                  In progress by another collector...
-                                
-                              )}
-                            {task.status === "verified" && (
-                              
-                                
-                                Reward Earned
-                              
-                            )}
-                          
-                        
-                      
-                    
+                          {task.status === "verified" && (
+                            <div className="flex items-center space-x-2">
+                              <CheckCircle className="text-green-500" size={20} />
+                              <span className="text-green-600">Reward Earned</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
                   ))}
-                
+                </div>
               )}
 
               {pageCount > 1 && (
-                
-                  
-                      setCurrentPage((prev) => Math.max(prev - 1, 1))
-                    }
+                <div className="flex justify-between items-center mt-4">
+                  <button
+                    onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
                     disabled={currentPage === 1}
                     className="px-4 py-2 text-sm font-medium text-gray-700 bg-white rounded-md border border-gray-300 cursor-pointer hover:bg-green-50 hover:text-green-700 disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     Previous
-                  
-                  
+                  </button>
+                  <span className="text-sm text-gray-600">
                     Page {currentPage} of {pageCount}
-                  
-                  
-                      setCurrentPage((prev) => Math.min(prev + 1, pageCount))
-                    }
+                  </span>
+                  <button
+                    onClick={() => setCurrentPage((prev) => Math.min(prev + 1, pageCount))}
                     disabled={currentPage === pageCount}
                     className="px-4 py-2 text-sm font-medium text-gray-700 bg-white rounded-md border border-gray-300 cursor-pointer hover:bg-green-50 hover:text-green-700 disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     Next
-                  
-                
+                  </button>
+                </div>
               )}
-            
+            </div>
           )}
-        
+        </div>
       )}
 
       {selectedTask && (
-        
-          
-
-          
-            
-              
-                
-                  Verify Collection
-                
-                 setSelectedTask(null)}
-                  className="p-1 text-gray-400 rounded-full transition-colors cursor-pointer hover:text-gray-500 hover:bg-gray-100"
-                  aria-label="Close modal"
+        <div className="flex fixed inset-0 justify-center items-center p-4 bg-black bg-opacity-50">
+          <div className="p-6 space-y-6 w-full max-w-2xl bg-white rounded-lg shadow-xl">
+            <div className="flex justify-between items-center">
+              <h2 className="text-xl font-semibold text-gray-900">
+                Verify Collection
+              </h2>
+              <button
+                onClick={() => setSelectedTask(null)}
+                className="p-1 text-gray-400 rounded-full transition-colors cursor-pointer hover:text-gray-500 hover:bg-gray-100"
+                aria-label="Close modal"
+              >
+                <svg
+                  className="w-6 h-6"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
                 >
-                  
-                    
-                  
-                
-              
-            
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+            </div>
 
-            
-              
-                
+            <div className="space-y-4">
+              <div>
+                <h3 className="mb-2 text-sm font-medium text-gray-700">
                   Original Image
-                
+                </h3>
                 {selectedTask.imageUrl && (
-                  
-                    
-                  
+                  <div className="overflow-hidden relative rounded-lg aspect-video">
+                    <Image
+                      src={selectedTask.imageUrl}
+                      alt="Original waste"
+                      fill
+                      className="object-cover"
+                    />
+                  </div>
                 )}
-              
+              </div>
 
-              
-                
+              <div>
+                <h3 className="mb-2 text-sm font-medium text-gray-700">
                   Upload Verification Photo
-                
-                
-                  
-                    
-                    
-                      
-                        Upload a file
-                        
-                      
-                    
-                    
+                </h3>
+                <div className="flex justify-center px-6 pt-5 pb-6 mt-1 rounded-lg border-2 border-gray-300 border-dashed">
+                  <div className="space-y-1 text-center">
+                    <Upload className="mx-auto w-12 h-12 text-gray-400" />
+                    <div className="flex text-sm text-gray-600">
+                      <label
+                        htmlFor="file-upload"
+                        className="relative font-medium text-green-600 bg-white rounded-md cursor-pointer hover:text-green-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-green-500"
+                      >
+                        <span>Upload a file</span>
+                        <input
+                          id="file-upload"
+                          name="file-upload"
+                          type="file"
+                          className="sr-only"
+                          accept="image/*"
+                          onChange={handleFileChange}
+                        />
+                      </label>
+                      <p className="pl-1">or drag and drop</p>
+                    </div>
+                    <p className="text-xs text-gray-500">
                       PNG, JPG, GIF up to 10MB
-                    
-                  
-                
-              
+                    </p>
+                  </div>
+                </div>
+              </div>
 
               {preview && (
-                
-                  
+                <div>
+                  <h3 className="mb-2 text-sm font-medium text-gray-700">
                     Verification Image
-                  
-                  
-                    
-                  
-                
+                  </h3>
+                  <div className="overflow-hidden relative rounded-lg aspect-video">
+                    <Image
+                      src={preview}
+                      alt="Verification"
+                      fill
+                      className="object-cover"
+                    />
+                  </div>
+                </div>
               )}
 
               {verificationDetails && (
-                
-                  
+                <div>
+                  <h3 className="mb-2 text-sm font-medium text-gray-700">
                     Verification Details
-                  
-                  
-                    
-                      Same Location:
-                      
+                  </h3>
+                  <div className="p-4 space-y-2 bg-gray-50 rounded-lg">
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Same Location:</span>
+                      <span className="font-medium">
                         {verificationDetails.sameLocation ? "Yes" : "No"}
-                      
-                    
-                    
-                      Waste Present:
-                      
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Waste Present:</span>
+                      <span className="font-medium">
                         {verificationDetails.firstImageHasWaste ? "Yes" : "No"}
-                      
-                    
-                    
-                      Cleanup Status:
-                      
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Cleanup Status:</span>
+                      <span className="font-medium">
                         {verificationDetails.cleanupStatus}
-                      
-                    
-                    
-                      Waste Type:
-                      
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Waste Type:</span>
+                      <span className="font-medium">
                         {verificationDetails.wasteType}
-                      
-                    
-                    
-                      
+                      </span>
+                    </div>
+                    <div className="mt-4">
+                      <span className="text-gray-600">Comments:</span>
+                      <p className="mt-1 text-sm text-gray-700">
                         {verificationDetails.comments}
-                      
-                    
-                  
-                
+                      </p>
+                    </div>
+                  </div>
+                </div>
               )}
 
               {verificationStatus === "success" && verificationResult && (
-                
-                  
-                    
-                      
-                    
-                    
-                      
+                <div className="p-4 bg-green-50 rounded-lg">
+                  <div className="flex items-center space-x-2">
+                    <CheckCircle className="text-green-500" size={20} />
+                    <div>
+                      <h4 className="text-sm font-medium text-green-800">
                         Verification Successful
-                      
-                      
-                        Your collection has been verified successfully. You&apos;ve earned a reward!
-                      
-                    
-                  
-                
+                      </h4>
+                      <p className="mt-1 text-sm text-green-700">
+                        Your collection has been verified successfully. You've earned a reward!
+                      </p>
+                    </div>
+                  </div>
+                </div>
               )}
 
               {verificationStatus === "failure" && (
-                
-                  
-                    
-                      
-                        
-                      
-                    
-                    
-                      
+                <div className="p-4 bg-red-50 rounded-lg">
+                  <div className="flex items-center space-x-2">
+                    <svg
+                      className="w-5 h-5 text-red-400"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                    <div>
+                      <h4 className="text-sm font-medium text-red-800">
                         Verification Failed
-                      
-                      
+                      </h4>
+                      <p className="mt-1 text-sm text-red-700">
                         {verificationDetails
                           ? "The verification criteria were not met. Please ensure the images are from the same location and the waste has been fully cleaned."
                           : "Please try again with a clearer image."}
-                      
-                    
-                  
-                
+                      </p>
+                    </div>
+                  </div>
+                </div>
               )}
-            
 
-            
-               {
-                  setSelectedTask(null);
-                  setVerificationStatus("idle");
-                  setVerificationDetails(null);
-                  setFile(null);
-                  setPreview(null);
-                }}
-                className="px-3 py-1.5 text-sm font-medium text-gray-700 bg-white rounded-md border border-gray-300 transition-colors cursor-pointer hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
-              >
-                {verificationStatus === "success" ||
-                verificationStatus === "failure"
-                  ? "Close"
-                  : "Cancel"}
-              
-              {verificationStatus !== "success" &&
-                verificationStatus !== "failure" && (
-                  
-                    {verificationStatus === "verifying" ? (
-                      <>
-                        
-                        Verifying...
-                      
-                    ) : (
-                      <>
-                        
-                        Verify
-                      
-                    )}
-                  
-                )}
-            
-          
-        
+              <div className="flex justify-end space-x-3">
+                <button
+                  onClick={() => {
+                    setSelectedTask(null);
+                    setVerificationStatus("idle");
+                    setVerificationDetails(null);
+                    setFile(null);
+                    setPreview(null);
+                  }}
+                  className="px-3 py-1.5 text-sm font-medium text-gray-700 bg-white rounded-md border border-gray-300 transition-colors cursor-pointer hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+                >
+                  {verificationStatus === "success" ||
+                  verificationStatus === "failure"
+                    ? "Close"
+                    : "Cancel"}
+                </button>
+                {verificationStatus !== "success" &&
+                  verificationStatus !== "failure" && (
+                    <button
+                      onClick={handleVerify}
+                      disabled={!file || verificationStatus === "verifying"}
+                      className="px-3 py-1.5 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {verificationStatus === "verifying" ? (
+                        <div className="flex items-center space-x-2">
+                          <div className="w-4 h-4">
+                            <Loader />
+                          </div>
+                          <span>Verifying...</span>
+                        </div>
+                      ) : (
+                        "Verify"
+                      )}
+                    </button>
+                  )}
+              </div>
+            </div>
+          </div>
+        </div>
       )}
-    
+    </div>
   );
 }
