@@ -19,7 +19,6 @@ import {
   updateRewardPoints,
   createNotification,
 } from "@/db/actions";
-import type { Report } from "@/lib/types";
 import { useRouter } from "next/navigation";
 import Loader from "@/components/Loader";
 import Image from "next/image";
@@ -35,11 +34,18 @@ interface Task {
   wasteType: string;
   amount: string;
   status: string;
-  collectorId: string;
-  verificationResult: any;
-  imageUrl: string;
+  collectorId: string | null;
+  verificationResult: CollectedWaste | null;
+  imageUrl: string | null;
   createdAt: Date;
   date?: string;
+}
+
+interface VerificationResult {
+  id: number;
+  status: string;
+  comments: string;
+  createdAt: Date;
 }
 
 interface VerificationDetails {
@@ -59,11 +65,17 @@ interface CollectedWaste {
   comment: string | null;
 }
 
+interface User {
+  id: string;
+  clerkId: string;
+  name: string;
+  email: string;
+}
+
 export default function CollectPage() {
   const router = useRouter();
   const [isClient, setIsClient] = useState(false);
-
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(true);
@@ -164,9 +176,9 @@ export default function CollectPage() {
           wasteType: task.wasteType,
           amount: task.amount,
           status: task.status,
-          collectorId: task.collectorId,
+          collectorId: task.collectorId || null,
           verificationResult: task.verificationResult,
-          imageUrl: task.imageUrl,
+          imageUrl: task.imageUrl || null,
           createdAt: new Date(task.date),
         }));
         setTasks(mappedTasks);
@@ -276,9 +288,14 @@ export default function CollectPage() {
         } = parsedResult;
 
         if (sameLocation && firstImageHasWaste && cleanupStatus === "fully cleaned") {
+          if (!user?.clerkId) {
+            toast.error("User not authenticated");
+            return;
+          }
+
           const collectedWaste = await createCollectedWaste(
             selectedTask.id,
-            user?.clerkId,
+            user.clerkId,
             comments
           );
 
@@ -286,17 +303,17 @@ export default function CollectPage() {
             const updatedReport = await updateTaskStatus(
               selectedTask.id,
               "verified",
-              user?.clerkId
+              user.clerkId
             );
 
             if (updatedReport) {
               await updateRewardPoints(
-                user?.clerkId,
+                user.clerkId,
                 50
               );
 
               await createNotification(
-                user?.clerkId,
+                user.clerkId,
                 `You earned 50 points for successfully collecting waste at ${selectedTask.location}!`,
                 "reward"
               );
@@ -311,7 +328,7 @@ export default function CollectPage() {
                     ? {
                         ...task,
                         status: "verified",
-                        collectorId: user?.clerkId,
+                        collectorId: user.clerkId || null,
                         verificationResult: collectedWaste,
                       }
                     : task
@@ -328,7 +345,7 @@ export default function CollectPage() {
         } else {
           setVerificationStatus("failure");
           toast.error(
-            "Verification failed. The images don't match or the waste hasn't been fully cleaned."
+            "Verification failed. The images don&apos;t match or the waste hasn&apos;t been fully cleaned."
           );
         }
       } else {
