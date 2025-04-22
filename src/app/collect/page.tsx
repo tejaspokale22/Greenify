@@ -41,13 +41,6 @@ interface Task {
   date?: string;
 }
 
-interface VerificationResult {
-  id: number;
-  status: string;
-  comments: string;
-  createdAt: Date;
-}
-
 interface VerificationDetails {
   sameLocation: boolean;
   firstImageHasWaste: boolean;
@@ -70,6 +63,19 @@ interface User {
   clerkId: string;
   name: string;
   email: string;
+}
+
+interface FetchedTask {
+  id: number;
+  userId: string;
+  location: string;
+  wasteType: string;
+  amount: string;
+  status: string;
+  collectorId: string | null;
+  verificationResult: unknown;
+  imageUrl: string | null;
+  date: string;
 }
 
 export default function CollectPage() {
@@ -169,7 +175,7 @@ export default function CollectPage() {
       try {
         setLoading(true);
         const fetchedTasks = await getWasteCollectionTasks();
-        const mappedTasks = fetchedTasks.map((task: any) => ({
+        const mappedTasks = fetchedTasks.map((task: FetchedTask) => ({
           id: task.id,
           userId: task.userId,
           location: task.location,
@@ -177,8 +183,8 @@ export default function CollectPage() {
           amount: task.amount,
           status: task.status,
           collectorId: task.collectorId || null,
-          verificationResult: task.verificationResult,
-          imageUrl: task.imageUrl || null,
+          verificationResult: task.verificationResult as CollectedWaste | null,
+          imageUrl: task.imageUrl,
           createdAt: new Date(task.date),
         }));
         setTasks(mappedTasks);
@@ -701,7 +707,7 @@ export default function CollectPage() {
                         Verification Successful
                       </h4>
                       <p className="mt-1 text-sm text-green-700">
-                        Your collection has been verified successfully. You've earned a reward!
+                        Your collection has been verified successfully. You&apos;ve earned a reward!
                       </p>
                     </div>
                   </div>
