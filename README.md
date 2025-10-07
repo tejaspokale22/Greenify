@@ -172,17 +172,6 @@ public/screenshots → Add your screenshots here
 
 ---
 
-## 🤝 Team
-
-- Lead Developer: Tejas Pokale
-- Frontend: Aniket Polkar
-- AI Integration: Tejas Pokale
-- UI/UX: Devashish Rahate
-- GIS & Database: Tejas Pokale
-- Documentation: Pranav Patil
-
----
-
 ## 📄 License
 
 This project is licensed under the MIT License.  
