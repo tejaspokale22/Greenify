@@ -3,6 +3,7 @@
 Greenify is a smart, AI-driven web platform that redefines how waste is identified, categorized, and collected. Powered by Gemini LLM, geospatial mapping, and real-time task automation, Greenify empowers citizens and municipalities to manage waste sustainably.
 
 ---
+[Watch the demo video](https://drive.google.com/file/d/1rsVsgaDmHsmrQItztAx6_hdlBOW7jyaB/view?usp=sharing)
 
 ## 🌟 Key Highlights
 
